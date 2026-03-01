@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Escola Splai FC - Premier Math Runner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Ubuntu:wght@400;700&display=swap');
+
+        :root {
+            --primary: #1e3a8a; /* Blue */
+            --secondary: #10b981; /* Green grass */
+            --danger: #ef4444; /* Red defender */
+            --accent: #fbbf24; /* Yellow trophy/stars */
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #87CEEB;
+            font-family: 'Ubuntu', sans-serif;
+            touch-action: none; 
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(to bottom, #87CEEB 0%, #e0f6ff 60%, #4ade80 60%, #22c55e 100%);
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .cartoon-font { font-family: 'Fredoka One', cursive; }
+
+        /* UI Overlays */
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(5px);
+            z-index: 50;
+            transition: opacity 0.3s ease;
+        }
+
+        .hidden { display: none !important; }
+
+        /* HUD MODERNIZADO */
+        #hud {
+            position: absolute;
+            top: 15px; left: 15px; right: 15px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .hud-panel {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 12px 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .hud-bar { width: 180px; height: 22px; background: #333; border: 3px solid white; border-radius: 12px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
+        #energy-fill { width: 100%; height: 100%; background: #22c55e; transition: width 0.3s, background-color 0.3s; }
+        
+        /* Controls */
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 0; right: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 30px;
+            z-index: 5;
+            pointer-events: none;
+        }
+        
+        .d-pad { display: flex; gap: 15px; pointer-events: auto; }
+        .control-btn {
+            width: 75px; height: 75px;
+            background: rgba(255,255,255,0.4); border: 4px solid white; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            color: white; font-size: 2.5rem; font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); backdrop-filter: blur(4px);
+            transition: transform 0.1s, background 0.1s;
+        }
+        .control-btn:active, .control-btn.active { transform: scale(0.9) translateY(4px); background: rgba(255,255,255,0.8); color: var(--primary); }
+        .action-pad { pointer-events: auto; }
+
+        /* Modals */
+        .modal-box {
+            background: white; border-radius: 30px; padding: 30px; width: 90%;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); transform: scale(0.9);
+            animation: popIn 0.3s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn { to { transform: scale(1); } }
+
+        /* Numpad */
+        .numpad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 20px; }
+        .numpad button { background: #f3f4f6; border: 2px solid #d1d5db; border-radius: 16px; font-size: 1.8rem; padding: 15px 0; font-weight: bold; color: #1f2937; cursor: pointer; box-shadow: 0 6px 0 #d1d5db; transition: all 0.1s; }
+        .numpad button:active { transform: translateY(6px); box-shadow: 0 0 0 #d1d5db; }
+        .numpad button.action-btn { background: #3b82f6; color: white; border-color: #2563eb; box-shadow: 0 6px 0 #2563eb; }
+        .numpad button.action-btn.del { background: #ef4444; border-color: #dc2626; box-shadow: 0 6px 0 #dc2626; }
+        .numpad button.action-btn.ok { background: #10b981; border-color: #059669; box-shadow: 0 6px 0 #059669; grid-column: span 2; }
+
+        #answer-display {
+            font-size: 3rem; min-height: 4.5rem; background: #e5e7eb; border-radius: 15px; margin: 15px 0;
+            display: flex; align-items: center; justify-content: center; font-family: 'Fredoka One', cursive;
+            color: var(--primary); letter-spacing: 2px; box-shadow: inset 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .fraction-visual { display: inline-grid; gap: 4px; padding: 4px; background: #333; border-radius: 8px; margin: 10px auto; }
+        .fraction-cell { width: 35px; height: 35px; background: white; border-radius: 4px; }
+        .fraction-cell.filled { background: var(--primary); }
+
+        .super-speed-fx { animation: dashSpeed 0.3s infinite alternate; }
+        @keyframes dashSpeed { 0% { box-shadow: inset 0 0 50px rgba(251, 191, 36, 0.2); } 100% { box-shadow: inset 0 0 100px rgba(251, 191, 36, 0.6); } }
+        
+        .pulse-shield { animation: pulseShield 1.5s infinite; }
+        @keyframes pulseShield { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.7); } 70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(250, 204, 21, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(250, 204, 21, 0); } }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- HUD MODERNIZADO Y AMPLIADO -->
+    <div id="hud" class="hidden">
+        <!-- Panel Izquierdo -->
+        <div class="hud-panel flex flex-col gap-2">
+            <div class="text-3xl cartoon-font text-white" id="player-name-hud">Jugador</div>
+            <div class="hud-bar"><div id="energy-fill"></div></div>
+            <div class="text-xl font-bold">Energia: <span id="energy-text" class="text-green-400">100</span>%</div>
+            <div class="text-lg text-yellow-300 font-bold cartoon-font tracking-wide" id="bonus-indicator"></div>
+        </div>
+        
+        <!-- Panel Derecho -->
+        <div class="hud-panel flex flex-col gap-2 items-end">
+            <div class="cartoon-font text-4xl text-yellow-400">FASE <span id="stage-hud">1</span></div>
+            <div class="text-xl font-bold bg-blue-900/40 px-3 py-1 rounded-lg border border-white/20">Punts: <span id="score-hud" class="text-yellow-300">0</span></div>
+            <div class="text-xl font-bold mt-1">Preguntes: <span id="questions-hud" class="text-blue-300">0</span>/40</div>
+            <div class="text-xl font-bold">Encerts: <span id="correct-hud" class="text-green-400">0</span>%</div>
+        </div>
+    </div>
+
+    <!-- Controles iPad -->
+    <div id="controls" class="hidden">
+        <div class="d-pad">
+            <button class="control-btn" id="btn-left">◀</button>
+            <button class="control-btn" id="btn-right">▶</button>
+        </div>
+        <div class="action-pad">
+            <button class="control-btn" id="btn-jump">▲</button>
+        </div>
+    </div>
+
+    <!-- Menú Principal -->
+    <div id="menu-screen" class="overlay">
+        <div class="modal-box border-8 border-blue-900 max-w-2xl text-center">
+            <h1 class="cartoon-font text-5xl md:text-6xl text-blue-900 mb-2 tracking-wide">Escola Splai FC</h1>
+            <h2 class="text-2xl text-gray-700 mb-6 font-bold uppercase tracking-widest">Premier Math Runner</h2>
+            
+            <div class="mb-6">
+                <input type="text" id="player-name" class="w-full text-center text-3xl font-bold p-4 border-4 border-gray-300 rounded-2xl focus:border-blue-500 outline-none" placeholder="Escriu el teu nom..." autocomplete="off">
+            </div>
+
+            <p class="text-gray-700 font-bold mb-3 text-xl">Selecciona el teu jugador:</p>
+            <div class="flex justify-center gap-6 mb-8">
+                <div class="character-select border-4 border-gray-300 rounded-3xl p-4 cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all transform hover:scale-105" onclick="selectCharacter('ana')" id="char-ana">
+                    <canvas id="preview-ana" width="100" height="120"></canvas>
+                    <p class="cartoon-font text-2xl mt-2 text-gray-800">Ana</p>
+                </div>
+                <div class="character-select border-4 border-gray-300 rounded-3xl p-4 cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all transform hover:scale-105" onclick="selectCharacter('oscar')" id="char-oscar">
+                    <canvas id="preview-oscar" width="100" height="120"></canvas>
+                    <p class="cartoon-font text-2xl mt-2 text-gray-800">Oscar</p>
+                </div>
+            </div>
+
+            <button id="start-btn" class="cartoon-font w-full bg-green-500 hover:bg-green-600 text-white p-5 rounded-2xl text-3xl shadow-[0_8px_0_#166534] active:translate-y-2 active:shadow-none transition-all tracking-wider">A JUGAR!</button>
+        </div>
+    </div>
+
+    <!-- Pantalla Pre-Fase (VITRINA DE ESCUDOS) -->
+    <div id="pre-stage-screen" class="overlay hidden">
+        <div class="modal-box border-8 border-yellow-400 max-w-4xl text-center bg-gray-50">
+            <h2 class="cartoon-font text-5xl text-blue-900 mb-2">LA TEVA COL·LECCIÓ</h2>
+            <p class="text-xl font-bold text-gray-500 mb-8 uppercase tracking-wider">Aconsegueix els 5 escuts!</p>
+            
+            <div class="flex flex-wrap justify-center gap-4 md:gap-8 mb-10" id="shields-gallery">
+                <!-- Se rellena con JS -->
+            </div>
+
+            <div class="bg-blue-100 border-l-8 border-blue-500 p-6 rounded-xl mb-8 text-left">
+                <h3 class="text-3xl font-bold text-blue-900 mb-2" id="pre-stage-title">Preparat per la Fase X?</h3>
+                <p class="text-xl text-blue-800 font-semibold" id="pre-stage-desc">Agafa els balons matemàtics per respondre preguntes i esquiva els defensors de vermell!</p>
+            </div>
+
+            <button onclick="startStageFromPre()" class="cartoon-font w-full bg-blue-500 hover:bg-blue-600 text-white p-6 rounded-2xl text-4xl shadow-[0_8px_0_#1e3a8a] active:translate-y-2 active:shadow-none transition-all uppercase">
+                COMENÇAR FASE <span id="pre-stage-btn-num"></span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal de Pregunta -->
+    <div id="question-screen" class="overlay hidden">
+        <div class="modal-box max-w-2xl border-8 border-blue-600 text-center">
+            <div class="flex justify-between items-center mb-4">
+                <span class="bg-blue-100 text-blue-800 text-lg font-bold px-4 py-2 rounded-full uppercase">Fase <span id="q-stage"></span></span>
+                <span class="bg-green-100 text-green-800 text-lg font-bold px-4 py-2 rounded-full uppercase">Pregunta <span id="q-progress"></span> / 40</span>
+            </div>
+            
+            <h3 id="question-text" class="text-3xl md:text-4xl font-bold text-gray-800 mb-4 leading-tight"></h3>
+            <div id="question-visual" class="mb-4 min-h-[60px] flex justify-center items-center"></div>
+            
+            <div id="answer-display">_</div>
+
+            <div class="numpad" id="numpad-container">
+                <button onclick="typeNumpad('1')">1</button>
+                <button onclick="typeNumpad('2')">2</button>
+                <button onclick="typeNumpad('3')">3</button>
+                <button onclick="typeNumpad('/')" class="action-btn" title="Fracció">/</button>
+                
+                <button onclick="typeNumpad('4')">4</button>
+                <button onclick="typeNumpad('5')">5</button>
+                <button onclick="typeNumpad('6')">6</button>
+                <button onclick="typeNumpad(',')" class="action-btn" title="Decimal">,</button>
+                
+                <button onclick="typeNumpad('7')">7</button>
+                <button onclick="typeNumpad('8')">8</button>
+                <button onclick="typeNumpad('9')">9</button>
+                <button onclick="typeNumpad('del')" class="action-btn del">⌫</button>
+                
+                <button onclick="typeNumpad('-')">-</button>
+                <button onclick="typeNumpad('0')">0</button>
+                <button onclick="checkAnswer()" class="action-btn ok cartoon-font">OK</button>
+            </div>
+            <div id="feedback-msg" class="h-10 mt-4 cartoon-font text-3xl tracking-wide"></div>
+        </div>
+    </div>
+
+    <!-- Pantalla Fin de Fase -->
+    <div id="stage-screen" class="overlay hidden">
+        <div class="modal-box border-8 border-yellow-400 max-w-2xl text-center">
+            <h2 class="cartoon-font text-5xl text-yellow-500 mb-2">FASE <span id="stage-end-num"></span> SUPERADA!</h2>
+            <div class="my-6" id="shield-container"></div>
+            <h3 class="cartoon-font text-4xl text-blue-900" id="shield-name"></h3>
+            <p class="text-gray-600 mb-8 font-bold uppercase tracking-wider text-xl">Escut afegit a la col·lecció!</p>
+            
+            <div class="bg-gray-100 p-6 rounded-2xl mb-8 text-left border-4 border-gray-200">
+                <p class="text-2xl font-bold text-gray-800 border-b-4 border-gray-300 pb-3 mb-4">El teu Rendiment:</p>
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-xl font-bold">Respostes correctes:</span>
+                    <span id="stage-correct-txt" class="text-2xl font-bold text-green-600 bg-green-100 px-4 py-1 rounded-xl"></span>
+                </div>
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-xl font-bold">Precisió:</span>
+                    <span id="stage-acc-txt" class="text-2xl font-bold text-blue-600"></span>
+                </div>
+                <div class="flex justify-between items-center mt-6 pt-4 border-t-4 border-gray-300">
+                    <span class="text-2xl font-bold">Puntuació de la Fase:</span>
+                    <span id="stage-score-txt" class="text-4xl cartoon-font text-yellow-500 drop-shadow"></span>
+                </div>
+            </div>
+
+            <button onclick="nextStage()" class="cartoon-font w-full bg-blue-500 hover:bg-blue-600 text-white p-6 rounded-2xl text-3xl shadow-[0_8px_0_#1e3a8a] active:translate-y-2 active:shadow-none transition-all">AVANÇAR</button>
+        </div>
+    </div>
+
+    <!-- Pantalla Game Over / Victoria -->
+    <div id="gameover-screen" class="overlay hidden">
+        <div class="modal-box border-8 border-red-500 max-w-2xl text-center">
+            <h2 class="cartoon-font text-6xl mb-6" id="end-title">FI DEL JOC</h2>
+            <p class="text-2xl mb-8 font-bold text-gray-700 leading-relaxed" id="end-msg"></p>
+            <div class="bg-gray-100 p-8 rounded-2xl mb-8 border-4 border-gray-200">
+                <span class="text-3xl font-bold block mb-4">Puntuació Final:</span>
+                <span id="final-score" class="cartoon-font text-7xl text-blue-600 drop-shadow-md"></span>
+            </div>
+            <button onclick="location.reload()" class="cartoon-font w-full bg-green-500 hover:bg-green-600 text-white p-6 rounded-2xl text-3xl shadow-[0_8px_0_#166534] active:translate-y-2 active:shadow-none transition-all">TORNAR A JUGAR</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    /* --- GAME CONFIG & STATE --- */
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    let keys = { left: false, right: false, up: false };
+
+    let state = {
+        running: false,
+        paused: false,
+        playerName: 'Jugador',
+        character: 'ana', 
+        stage: 1,
+        score: 0,
+        energy: 100,
+        speedMultiplier: 1,
+        questionsAnswered: 0,
+        correctAnswersStage: 0,
+        totalCorrectAnswers: 0,
+        totalQuestionsAsked: 0,
+        consecutiveCorrect: 0,
+        superSpeedTimer: 0,
+        currentAnswer: "",
+        expectedAnswer: "",
+        cameraX: 0,
+        nextSpawnDist: 800,
+        frames: 0
+    };
+
+    const config = {
+        maxQuestionsPerStage: 40,
+        baseSpeed: 7,
+        gravity: 0.7,
+        jumpForce: -14,
+        groundHeight: 140
+    };
+
+    let entities = { player: null, obstacles: [], particles: [] };
+
+    /* --- MATH QUESTION ENGINE (Fichas 24-37) --- */
+    const MathEngine = {
+        generate(stage) {
+            let q = { text: "", visual: null, answer: "" };
+            const typeRand = Math.random();
+
+            if (stage === 1) {
+                if (typeRand < 0.5) {
+                    let den = Math.floor(Math.random() * 8) + 2;
+                    let num = Math.floor(Math.random() * (den - 1)) + 1;
+                    q.text = `Quina fracció representa la imatge?`;
+                    q.visual = () => this.drawFractionGrid(num, den);
+                    q.answer = `${num}/${den}`;
+                } else if (typeRand < 0.8) {
+                    let enteros = Math.floor(Math.random() * 10);
+                    let dec = Math.floor(Math.random() * 99) + 1;
+                    q.text = `Escriu el nombre: ${enteros} unitats i ${dec} centèsimes`;
+                    q.answer = `${enteros},${dec < 10 ? '0'+dec : dec}`;
+                } else {
+                    let n = Math.floor(Math.random()*5)+1;
+                    let d = n + Math.floor(Math.random()*4)+1;
+                    q.text = `Escriu la fracció: ${n} dividit entre ${d}`;
+                    q.answer = `${n}/${d}`;
+                }
+            } 
+            else if (stage === 2) {
+                if (typeRand < 0.5) {
+                    let enter = Math.floor(Math.random() * 5) + 1;
+                    let den = Math.floor(Math.random() * 5) + 2;
+                    let num = Math.floor(Math.random() * (den - 1)) + 1;
+                    q.text = `Passa a fracció el nombre mixt: ${enter} i ${num}/${den}`;
+                    q.answer = `${(enter * den) + num}/${den}`;
+                } else {
+                    let n1 = Math.floor(Math.random()*4)+1;
+                    let d1 = Math.floor(Math.random()*4)+2;
+                    let mult = Math.floor(Math.random()*3)+2;
+                    q.text = `Escriu una fracció equivalent a ${n1}/${d1} multiplicant per ${mult}`;
+                    q.answer = `${n1*mult}/${d1*mult}`;
+                }
+            }
+            else if (stage === 3) {
+                if (typeRand < 0.5) {
+                    let den = Math.floor(Math.random() * 10) + 3;
+                    let n1 = Math.floor(Math.random() * 5) + 1;
+                    let n2 = Math.floor(Math.random() * 5) + 1;
+                    let op = Math.random() < 0.5 ? '+' : '-';
+                    if (op === '-' && n1 < n2) { let temp = n1; n1 = n2; n2 = temp; }
+                    q.text = `Resol: ${n1}/${den} ${op} ${n2}/${den}`;
+                    q.answer = op === '+' ? `${n1+n2}/${den}` : `${n1-n2}/${den}`;
+                } else {
+                    let d1 = (Math.random() * 10).toFixed(1);
+                    let d2 = (Math.random() * 10).toFixed(1);
+                    q.text = `Suma: ${d1.replace('.',',')} + ${d2.replace('.',',')}`;
+                    let res = parseFloat(d1) + parseFloat(d2);
+                    q.answer = res.toFixed(1).replace('.',',');
+                    if(q.answer.endsWith(',0')) q.answer = q.answer.substring(0, q.answer.length - 2);
+                }
+            }
+            else if (stage === 4) {
+                if (typeRand < 0.6) {
+                    let pairs = [[2,4], [3,6], [2,6], [4,8], [5,10]];
+                    let pair = pairs[Math.floor(Math.random()*pairs.length)];
+                    let n1 = 1; let d1 = pair[0];
+                    let n2 = 1; let d2 = pair[1];
+                    q.text = `Suma: ${n1}/${d1} + ${n2}/${d2} (sense simplificar)`;
+                    let factor = d2 / d1;
+                    let finalN = (n1 * factor) + n2;
+                    q.answer = `${finalN}/${d2}`;
+                } else {
+                    let d1 = (Math.random() * 20 + 10).toFixed(2);
+                    let d2 = (Math.random() * 9).toFixed(2);
+                    q.text = `Resta: ${d1.replace('.',',')} - ${d2.replace('.',',')}`;
+                    let res = parseFloat(d1) - parseFloat(d2);
+                    q.answer = res.toFixed(2).replace('.',',');
+                    if(q.answer.endsWith('0')) q.answer = q.answer.slice(0, -1);
+                    if(q.answer.endsWith(',')) q.answer = q.answer.slice(0, -1);
+                }
+            }
+            else if (stage === 5) {
+                if (typeRand < 0.5) {
+                    let n1 = Math.floor(Math.random() * 4) + 1;
+                    let d1 = Math.floor(Math.random() * 4) + 2;
+                    let n2 = Math.floor(Math.random() * 4) + 1;
+                    let d2 = Math.floor(Math.random() * 4) + 2;
+                    q.text = `Multiplica: ${n1}/${d1} x ${n2}/${d2}`;
+                    q.answer = `${n1*n2}/${d1*d2}`;
+                } else {
+                    let enteros = Math.floor(Math.random() * 8) + 2;
+                    let dec = (Math.random() * 5).toFixed(1);
+                    q.text = `Multiplica: ${enteros} x ${dec.replace('.',',')}`;
+                    let res = enteros * parseFloat(dec);
+                    q.answer = res.toFixed(1).replace('.',',');
+                    if(q.answer.endsWith(',0')) q.answer = q.answer.substring(0, q.answer.length - 2);
+                }
+            }
+            return q;
+        },
+
+        drawFractionGrid(num, den) {
+            let cols = Math.ceil(Math.sqrt(den));
+            let html = `<div class="fraction-visual" style="grid-template-columns: repeat(${cols}, 1fr);">`;
+            for(let i=0; i<den; i++) {
+                html += `<div class="fraction-cell ${i < num ? 'filled' : ''}"></div>`;
+            }
+            html += `</div>`;
+            return html;
+        }
+    };
+
+    const Shields = {
+        1: { name: "Manchester City", color: "#6CABDD", svg: `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="50" r="45" fill="#6CABDD" stroke="#fff" stroke-width="4"/><circle cx="50" cy="50" r="35" fill="none" stroke="#fff" stroke-width="2"/><path d="M 30 50 Q 50 70 70 50 L 60 30 L 40 30 Z" fill="#fff"/></svg>` },
+        2: { name: "Liverpool", color: "#C8102E", svg: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M 20 20 L 80 20 L 80 50 Q 80 90 50 95 Q 20 90 20 50 Z" fill="#C8102E" stroke="#fff" stroke-width="4"/><path d="M 40 70 L 60 70 L 60 40 L 70 40 L 50 25 L 30 40 L 40 40 Z" fill="#fff"/></svg>` },
+        3: { name: "Chelsea", color: "#034694", svg: `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="50" r="45" fill="#034694" stroke="#fff" stroke-width="4"/><circle cx="50" cy="50" r="30" fill="none" stroke="#DBA111" stroke-width="3"/><path d="M 40 60 Q 50 30 70 40 Q 60 60 40 60" fill="#DBA111"/></svg>` },
+        4: { name: "Leicester City", color: "#003090", svg: `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="50" r="45" fill="#003090" stroke="#FDBE11" stroke-width="4"/><polygon points="35,35 65,35 50,70" fill="#FDBE11"/><circle cx="50" cy="45" r="10" fill="#fff"/></svg>` },
+        5: { name: "Manchester Utd", color: "#DA291C", svg: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M 25 20 L 75 20 L 85 50 Q 85 85 50 95 Q 15 85 15 50 Z" fill="#DA291C" stroke="#FBE122" stroke-width="4"/><rect x="35" y="40" width="30" height="20" fill="#FBE122"/></svg>` }
+    };
+
+    /* --- GAME ENGINE (Classes) --- */
+    class Player {
+        constructor() {
+            this.w = 50; this.h = 80; 
+            this.x = 200; 
+            this.y = 0;
+            this.vy = 0;
+            this.vx = 0;
+            this.isJumping = false;
+            this.animFrame = 0;
+            this.invincible = 0;
+            this.facing = 1; 
+            this.resetPos();
+        }
+
+        resetPos() {
+            this.y = canvas.height - config.groundHeight;
+            this.vy = 0;
+            this.vx = 0;
+            this.isJumping = false;
+        }
+
+        jump() {
+            if (!this.isJumping) {
+                this.vy = config.jumpForce;
+                this.isJumping = true;
+                createParticles(this.x, this.y, '#fff', 8);
+            }
+        }
+
+        update() {
+            let currentSpeed = config.baseSpeed * state.speedMultiplier;
+            
+            if (keys.right) {
+                this.vx = currentSpeed;
+                this.facing = 1;
+                this.animFrame += 0.3 * state.speedMultiplier;
+            } else if (keys.left) {
+                this.vx = -currentSpeed;
+                this.facing = -1;
+                this.animFrame += 0.3 * state.speedMultiplier;
+            } else {
+                this.vx = 0;
+                this.animFrame = 0; 
+            }
+
+            this.x += this.vx;
+
+            let pushRightBoundary = state.cameraX + canvas.width * 0.4;
+            let pushLeftBoundary = state.cameraX + canvas.width * 0.1;
+
+            if (this.x > pushRightBoundary) {
+                state.cameraX = this.x - canvas.width * 0.4;
+            } else if (this.x < pushLeftBoundary) {
+                state.cameraX = this.x - canvas.width * 0.1;
+            }
+
+            if (state.cameraX < 0) state.cameraX = 0;
+            if (this.x < 50) this.x = 50; 
+
+            this.vy += config.gravity;
+            this.y += this.vy;
+
+            let floorY = canvas.height - config.groundHeight;
+            if (this.y > floorY) {
+                this.y = floorY;
+                this.vy = 0;
+                this.isJumping = false;
+            }
+
+            if (this.invincible > 0) this.invincible--;
+        }
+
+        draw(ctx) {
+            ctx.save();
+            let screenX = this.x - state.cameraX;
+            ctx.translate(screenX, this.y);
+            ctx.scale(this.facing, 1);
+            
+            if (this.invincible > 0 && Math.floor(Date.now() / 100) % 2 === 0) {
+                ctx.globalAlpha = 0.5;
+            }
+
+            if (state.superSpeedTimer > 0) {
+                ctx.fillStyle = 'rgba(251, 191, 36, 0.4)';
+                ctx.beginPath();
+                ctx.arc(0, -40, 60 + Math.sin(Date.now()/50)*10, 0, Math.PI*2);
+                ctx.fill();
+            }
+
+            drawChibiCharacter(ctx, state.character, this.animFrame, this.isJumping);
+            ctx.restore();
+        }
+    }
+
+    class Obstacle {
+        constructor(worldX, type) {
+            this.x = worldX;
+            this.type = type; 
+            this.w = this.type === 'defender' ? 50 : 40;
+            this.h = this.type === 'defender' ? 80 : 40;
+            
+            this.y = canvas.height - config.groundHeight;
+            
+            if (this.type === 'mathball' && Math.random() > 0.5) {
+                this.y -= 80; 
+            }
+            this.passed = false;
+            this.offsetAnim = Math.random() * Math.PI * 2; 
+        }
+
+        update() {
+            if (this.type === 'defender') {
+                this.x -= (config.baseSpeed * 0.2); 
+            }
+        }
+
+        draw(ctx) {
+            let screenX = this.x - state.cameraX;
+            if (screenX < -100 || screenX > canvas.width + 100) return;
+
+            ctx.save();
+            ctx.translate(screenX, this.y);
+
+            if (this.type === 'defender') {
+                drawChibiDefender(ctx, state.frames + this.offsetAnim);
+            } else {
+                drawCartoonMathBall(ctx);
+            }
+            ctx.restore();
+        }
+    }
+
+    class Particle {
+        constructor(x, y, color) {
+            this.x = x; this.y = y;
+            this.vx = (Math.random() - 0.5) * 15;
+            this.vy = (Math.random() - 0.5) * 15;
+            this.life = 1.0;
+            this.color = color;
+            this.size = Math.random() * 8 + 4;
+        }
+        update() {
+            this.x += this.vx; this.y += this.vy;
+            this.life -= 0.04;
+        }
+        draw(ctx) {
+            let screenX = this.x - state.cameraX;
+            ctx.fillStyle = this.color;
+            ctx.globalAlpha = this.life;
+            ctx.beginPath();
+            ctx.arc(screenX, this.y, this.size, 0, Math.PI*2);
+            ctx.fill();
+            ctx.globalAlpha = 1.0;
+        }
+    }
+
+    function createParticles(x, y, color, amount) {
+        for(let i=0; i<amount; i++) entities.particles.push(new Particle(x, y - 40, color));
+    }
+
+    /* --- CHIBI RENDERING --- */
+    function drawChibiCharacter(ctx, charName, frame, isJumping) {
+        const skin = '#fcd34d'; const shirt = '#1e3a8a'; const darkShirt = '#172554';
+        const pants = '#ffffff'; const shoes = '#000000';
+
+        let bodyY = -12; 
+        let headY = isJumping ? -55 : -52 + Math.abs(Math.sin(frame*2))*2; 
+        let headR = 26; 
+
+        let legSwing = isJumping ? 0 : Math.sin(frame) * 8;
+        let armSwing = isJumping ? -15 : Math.sin(frame + Math.PI) * 12;
+
+        ctx.fillStyle = 'rgba(0,0,0,0.15)'; ctx.beginPath(); ctx.ellipse(0, 0, 20, 5, 0, 0, Math.PI*2); ctx.fill();
+
+        ctx.fillStyle = skin; ctx.beginPath(); ctx.roundRect(-4 + armSwing, bodyY - 12, 8, 14, 4); ctx.fill();
+        ctx.fillStyle = skin; ctx.beginPath();
+        if (isJumping) ctx.roundRect(2, -8, 8, 10, 4); else ctx.roundRect(-4 - legSwing, -10, 8, 12, 4); ctx.fill();
+
+        ctx.fillStyle = shirt; ctx.beginPath(); ctx.roundRect(-12, bodyY - 15, 24, 18, 6); ctx.fill();
+        ctx.fillStyle = darkShirt; ctx.fillRect(-4, bodyY - 15, 8, 18); 
+        ctx.fillStyle = pants; ctx.beginPath(); ctx.roundRect(-13, bodyY + 1, 26, 6, 2); ctx.fill();
+
+        ctx.fillStyle = skin; ctx.beginPath();
+        if (isJumping) ctx.roundRect(-10, -10, 8, 12, 4); else ctx.roundRect(-4 + legSwing, -10, 8, 14, 4); ctx.fill();
+
+        ctx.fillStyle = shoes;
+        if (isJumping) ctx.roundRect(-12, 0, 10, 6, 3); else ctx.roundRect(-6 + legSwing, 2, 12, 6, 3); ctx.fill();
+
+        if (charName === 'ana') {
+            ctx.fillStyle = '#451a03'; ctx.beginPath();
+            let tailSwing = isJumping ? -15 : Math.sin(frame)*10;
+            ctx.arc(-22, headY + 5 + tailSwing, 16, 0, Math.PI*2); ctx.fill();
+        }
+
+        ctx.fillStyle = skin; ctx.beginPath(); ctx.arc(0, headY, headR, 0, Math.PI*2); ctx.fill();
+
+        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(10, headY + 2, 8, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#000000'; ctx.beginPath(); ctx.arc(12, headY + 2, 5, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(13, headY, 2, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(10, headY + 4, 1, 0, Math.PI*2); ctx.fill();
+
+        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(-5, headY + 2, 7, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#000000'; ctx.beginPath(); ctx.arc(-3, headY + 2, 4.5, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(-2, headY, 1.8, 0, Math.PI*2); ctx.fill();
+
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.3)';
+        ctx.beginPath(); ctx.ellipse(18, headY + 12, 4, 2, 0, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(-10, headY + 12, 4, 2, 0, 0, Math.PI*2); ctx.fill();
+
+        ctx.strokeStyle = '#9a3412'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(6, headY + 12, 4, 0, Math.PI); ctx.stroke();
+
+        if (charName === 'ana') {
+            ctx.fillStyle = '#451a03'; ctx.beginPath(); ctx.arc(0, headY - 4, headR + 1, Math.PI, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(-26, headY - 4); ctx.quadraticCurveTo(-10, headY - 20, 15, headY - 10); ctx.lineTo(26, headY - 4); ctx.fill();
+        } else {
+            ctx.fillStyle = '#b45309'; ctx.beginPath();
+            ctx.moveTo(-25, headY); ctx.lineTo(-18, headY - 32); ctx.lineTo(-5, headY - 22); ctx.lineTo(8, headY - 35); ctx.lineTo(18, headY - 20); ctx.lineTo(26, headY - 5); ctx.fill();
+            ctx.fillStyle = '#b45309'; ctx.beginPath(); ctx.arc(16, headY + 10, 1, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(20, headY + 9, 1, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(18, headY + 13, 1, 0, Math.PI*2); ctx.fill();
+        }
+
+        ctx.fillStyle = skin; ctx.beginPath(); ctx.roundRect(-4 - armSwing, bodyY - 12, 8, 16, 4); ctx.fill();
+        ctx.fillStyle = shirt; ctx.beginPath(); ctx.roundRect(-5 - armSwing, bodyY - 13, 10, 8, 3); ctx.fill();
+    }
+
+    function drawChibiDefender(ctx, frame) {
+        const shirt = '#ef4444'; const skin = '#fca5a5'; const pants = '#1e3a8a'; const shoes = '#333333';
+        let legSwing = Math.sin(frame * 0.4) * 10; let armSwing = Math.sin(frame * 0.4 + Math.PI) * 12;
+        let headBounce = Math.abs(Math.sin(frame * 0.4)) * 3;
+        let bodyY = -12; let headY = -52 + headBounce; let headR = 26;
+
+        ctx.save(); ctx.scale(-1, 1);
+        ctx.fillStyle = 'rgba(0,0,0,0.15)'; ctx.beginPath(); ctx.ellipse(0, 0, 20, 5, 0, 0, Math.PI*2); ctx.fill();
+
+        ctx.fillStyle = skin; ctx.beginPath(); ctx.roundRect(-4 + armSwing, bodyY - 12, 8, 14, 4); ctx.fill();
+        ctx.fillStyle = skin; ctx.beginPath(); ctx.roundRect(-4 - legSwing, -10, 8, 12, 4); ctx.fill();
+
+        ctx.fillStyle = shirt; ctx.beginPath(); ctx.roundRect(-14, bodyY - 15, 28, 18, 6); ctx.fill();
+        ctx.fillStyle = '#ffffff'; ctx.font = 'bold 10px "Fredoka One"'; ctx.textAlign = 'center'; ctx.fillText('15', 0, bodyY - 2);
+        ctx.fillStyle = pants; ctx.beginPath(); ctx.roundRect(-15, bodyY + 1, 30, 6, 2); ctx.fill();
+
+        ctx.fillStyle = skin; ctx.beginPath(); ctx.roundRect(-4 + legSwing, -10, 8, 14, 4); ctx.fill();
+        ctx.fillStyle = shoes; ctx.beginPath(); ctx.roundRect(-6 + legSwing, 2, 12, 6, 3); ctx.fill();
+
+        ctx.fillStyle = skin; ctx.beginPath(); ctx.arc(0, headY, headR, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(-5, headY + 2, 6, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#000000'; ctx.beginPath(); ctx.arc(-4, headY + 2, 3, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(10, headY + 2, 8, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#000000'; ctx.beginPath(); ctx.arc(11, headY + 2, 4, 0, Math.PI*2); ctx.fill();
+
+        ctx.strokeStyle = '#7f1d1d'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(18, headY - 8); ctx.lineTo(6, headY - 2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(-10, headY - 6); ctx.lineTo(-2, headY - 2); ctx.stroke();
+
+        ctx.fillStyle = '#450a0a'; ctx.beginPath(); ctx.ellipse(8, headY + 12, 6, 4, 0, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.rect(4, headY + 9, 8, 3); ctx.fill();
+
+        ctx.fillStyle = '#991b1b'; ctx.beginPath(); ctx.arc(0, headY - 2, headR + 1.5, Math.PI, Math.PI*2); ctx.fill();
+
+        ctx.fillStyle = skin; ctx.beginPath(); ctx.roundRect(-4 - armSwing, bodyY - 12, 8, 16, 4); ctx.fill();
+        ctx.fillStyle = shirt; ctx.beginPath(); ctx.roundRect(-5 - armSwing, bodyY - 13, 10, 8, 3); ctx.fill();
+        ctx.restore();
+    }
+
+    function drawCartoonMathBall(ctx) {
+        let hover = Math.sin(Date.now()/200) * 8;
+        ctx.fillStyle = 'rgba(0,0,0,0.2)'; ctx.beginPath(); ctx.ellipse(0, 0, 18 - hover*0.5, 4, 0, 0, Math.PI*2); ctx.fill();
+        ctx.translate(0, -20 + hover);
+        ctx.fillStyle = 'rgba(251, 191, 36, 0.3)'; ctx.beginPath(); ctx.arc(0, 0, 25, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#111827'; ctx.beginPath();
+        for(let i=0; i<5; i++) {
+            let a = (i * Math.PI * 2) / 5 - Math.PI/2;
+            let x = Math.cos(a)*7; let y = Math.sin(a)*7;
+            if(i==0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+        }
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = '#111827'; ctx.lineWidth = 2;
+        for(let i=0; i<5; i++) {
+            let a = (i * Math.PI * 2) / 5 - Math.PI/2;
+            ctx.beginPath(); ctx.moveTo(Math.cos(a)*7, Math.sin(a)*7); ctx.lineTo(Math.cos(a)*18, Math.sin(a)*18); ctx.stroke();
+        }
+        ctx.strokeStyle = '#374151'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI*2); ctx.stroke();
+        ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 30px "Fredoka One"'; ctx.textAlign = 'center';
+        ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 10; ctx.fillText('?', 0, -24); ctx.shadowBlur = 0; 
+    }
+
+    /* --- GAME LOOP & LOGIC --- */
+    function resizeCanvas() {
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        if(entities.player) entities.player.resetPos();
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    function checkCollisions() {
+        let p = entities.player;
+        
+        // BUG FIX: Iterar hacia atrás para no saltarse elementos al hacer .splice()
+        for (let i = entities.obstacles.length - 1; i >= 0; i--) {
+            let obs = entities.obstacles[i];
+            
+            let dx = Math.abs(p.x - obs.x);
+            let dy = Math.abs((p.y - p.h/2) - (obs.y - obs.h/2));
+            
+            if (dx < (p.w + obs.w) * 0.4 && dy < (p.h + obs.h) * 0.45) {
+                if (obs.type === 'defender') {
+                    if (state.superSpeedTimer > 0) {
+                        createParticles(obs.x, obs.y, '#ef4444', 30);
+                        entities.obstacles.splice(i, 1);
+                        state.score += 50;
+                    } else if (p.invincible <= 0) {
+                        state.energy -= 20;
+                        state.consecutiveCorrect = 0;
+                        updateHUD();
+                        p.invincible = 60; 
+                        p.vx = -10; p.vy = -5; p.x -= 20;
+                        createParticles(p.x, p.y - 40, '#ef4444', 20);
+                        
+                        document.getElementById('game-container').classList.add('animate-ping');
+                        setTimeout(()=>document.getElementById('game-container').classList.remove('animate-ping'), 200);
+
+                        if (state.energy <= 0) gameOver(false);
+                    }
+                } else if (obs.type === 'mathball') {
+                    entities.obstacles.splice(i, 1);
+                    createParticles(obs.x, obs.y, '#fbbf24', 30);
+                    showQuestion();
+                }
+            }
+
+            if (obs.type === 'defender' && !obs.passed && obs.x < p.x - 30) {
+                obs.passed = true;
+                state.score += 10;
+            }
+        }
+    }
+
+    function drawBackground() {
+        ctx.fillStyle = '#87CEEB'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        let cloudOffset = (state.cameraX * 0.2) % 1500;
+        ctx.beginPath(); ctx.arc(200 - cloudOffset, 120, 40, 0, Math.PI*2); ctx.arc(250 - cloudOffset, 120, 50, 0, Math.PI*2); ctx.arc(300 - cloudOffset, 120, 40, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(900 - cloudOffset, 180, 50, 0, Math.PI*2); ctx.arc(970 - cloudOffset, 180, 70, 0, Math.PI*2); ctx.arc(1040 - cloudOffset, 180, 50, 0, Math.PI*2); ctx.fill();
+
+        ctx.fillStyle = 'rgba(0,0,0,0.08)';
+        let cityOffset = (state.cameraX * 0.4) % 1000;
+        for(let i=0; i<4; i++) {
+            let baseX = i*1000 - cityOffset;
+            ctx.fillRect(baseX + 100, canvas.height - config.groundHeight - 120, 200, 120);
+            ctx.beginPath(); ctx.arc(baseX + 500, canvas.height - config.groundHeight, 150, Math.PI, Math.PI*2); ctx.fill();
+            ctx.fillRect(baseX + 700, canvas.height - config.groundHeight - 180, 150, 180);
+        }
+
+        let stripeWidth = 150; let groundY = canvas.height - config.groundHeight;
+        let offset = state.cameraX % (stripeWidth * 2);
+        
+        ctx.fillStyle = '#a3e635'; ctx.fillRect(0, groundY, canvas.width, config.groundHeight);
+        ctx.fillStyle = '#84cc16';
+        for(let i = -1; i < canvas.width / stripeWidth + 2; i++) {
+            if (i % 2 === 0) ctx.fillRect(i * stripeWidth - offset, groundY, stripeWidth, config.groundHeight);
+        }
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(0, groundY, canvas.width, 6);
+    }
+
+    function gameLoop() {
+        if (!state.running) return;
+        
+        if (!state.paused) {
+            state.frames++;
+            
+            let viewEnd = state.cameraX + canvas.width;
+            if (viewEnd > state.nextSpawnDist) {
+                let isDefender = Math.random() < 0.6;
+                if (entities.obstacles.filter(o => o.type === 'mathball').length < 1) isDefender = false;
+                entities.obstacles.push(new Obstacle(state.nextSpawnDist + 200, isDefender ? 'defender' : 'mathball'));
+                state.nextSpawnDist += (isDefender ? 450 : 800);
+            }
+
+            entities.player.update();
+            entities.obstacles.forEach(o => o.update());
+            entities.particles.forEach(p => p.update());
+
+            entities.obstacles = entities.obstacles.filter(o => o.x > state.cameraX - 300);
+            entities.particles = entities.particles.filter(p => p.life > 0);
+
+            if (state.superSpeedTimer > 0) {
+                state.superSpeedTimer--;
+                state.speedMultiplier = 2.5;
+                if(state.superSpeedTimer === 0) {
+                    state.speedMultiplier = 1 + (state.stage * 0.1); 
+                    document.getElementById('game-container').classList.remove('super-speed-fx');
+                    state.consecutiveCorrect = 0; 
+                    updateHUD();
+                }
+            }
+
+            checkCollisions();
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBackground();
+            
+            entities.obstacles.sort((a,b) => a.y - b.y); 
+            entities.obstacles.forEach(o => o.draw(ctx));
+            entities.player.draw(ctx);
+            entities.particles.forEach(p => p.draw(ctx));
+        }
+
+        requestAnimationFrame(gameLoop);
+    }
+
+    /* --- INTERACTIONS & UI --- */
+    function startGame() {
+        let nameInput = document.getElementById('player-name').value;
+        if(nameInput) state.playerName = nameInput;
+        
+        document.getElementById('menu-screen').classList.add('hidden');
+        document.getElementById('hud').classList.remove('hidden');
+        document.getElementById('controls').classList.remove('hidden');
+        
+        resizeCanvas();
+        entities.player = new Player();
+        
+        state.running = true;
+        state.paused = false;
+        state.score = 0;
+        state.energy = 100;
+        state.totalCorrectAnswers = 0;
+        state.totalQuestionsAsked = 0;
+        
+        showPreStage(1); 
+        gameLoop();
+    }
+
+    // NUEVO: Pantalla Pre-Fase
+    function showPreStage(stageNum) {
+        state.paused = true;
+        state.stage = stageNum;
+        keys = { left: false, right: false, up: false }; 
+
+        document.getElementById('pre-stage-title').innerText = `Preparat per la Fase ${stageNum}?`;
+        document.getElementById('pre-stage-btn-num').innerText = stageNum;
+
+        let gallery = document.getElementById('shields-gallery');
+        gallery.innerHTML = '';
+
+        for (let i = 1; i <= 5; i++) {
+            let shield = Shields[i];
+            let isUnlocked = i < stageNum;
+            let isCurrent = i === stageNum;
+            
+            let div = document.createElement('div');
+            // Clases dinámicas dependiendo de si lo tienes, es el actual, o está bloqueado
+            let baseClasses = "flex flex-col items-center justify-center p-4 md:p-6 rounded-3xl border-4 transition-all w-28 h-36 md:w-36 md:h-44 bg-white";
+            
+            if (isCurrent) {
+                div.className = `${baseClasses} border-yellow-400 scale-110 pulse-shield z-10`;
+            } else if (isUnlocked) {
+                div.className = `${baseClasses} border-green-500 shadow-inner opacity-90`;
+            } else {
+                div.className = `${baseClasses} border-gray-300 opacity-60 bg-gray-100`;
+            }
+
+            // Cambiar a gris si está bloqueado
+            let svgHtml = shield.svg;
+            if (!isUnlocked && !isCurrent) {
+                svgHtml = svgHtml.replace(/fill="[^"]+"/g, 'fill="#cbd5e1"').replace(/stroke="[^"]+"/g, 'stroke="#94a3b8"');
+            }
+
+            div.innerHTML = `
+                <div class="w-16 h-16 md:w-24 md:h-24 mb-2 md:mb-4 flex items-center justify-center">
+                    ${!isUnlocked && !isCurrent ? '<span class="text-4xl md:text-5xl text-gray-400 font-bold cartoon-font">?</span>' : svgHtml}
+                </div>
+                <div class="text-xs md:text-sm font-bold text-center leading-tight ${isUnlocked || isCurrent ? 'text-gray-800' : 'text-gray-400'}">
+                    ${isUnlocked || isCurrent ? shield.name : 'Bloquejat'}
+                </div>
+            `;
+            gallery.appendChild(div);
+        }
+
+        document.getElementById('pre-stage-screen').classList.remove('hidden');
+    }
+
+    function startStageFromPre() {
+        document.getElementById('pre-stage-screen').classList.add('hidden');
+        startStage(state.stage);
+    }
+
+    function startStage(stageNum) {
+        state.questionsAnswered = 0;
+        state.correctAnswersStage = 0;
+        state.speedMultiplier = 1 + (stageNum * 0.1); 
+        
+        state.cameraX = 0;
+        state.nextSpawnDist = 800;
+        entities.player.x = 200;
+        entities.obstacles = [];
+        entities.particles = [];
+        
+        updateHUD();
+        state.paused = false; // Empezamos a correr!
+    }
+
+    function showQuestion() {
+        state.paused = true;
+        keys = { left: false, right: false, up: false }; 
+
+        let q = MathEngine.generate(state.stage);
+        state.expectedAnswer = q.answer;
+        state.currentAnswer = "";
+        
+        document.getElementById('q-stage').innerText = state.stage;
+        document.getElementById('q-progress').innerText = state.questionsAnswered + 1;
+        document.getElementById('question-text').innerText = q.text;
+        
+        let visDiv = document.getElementById('question-visual');
+        if (q.visual) { visDiv.innerHTML = q.visual(); visDiv.classList.remove('hidden'); } 
+        else { visDiv.innerHTML = ''; visDiv.classList.add('hidden'); }
+
+        document.getElementById('answer-display').innerText = "_";
+        document.getElementById('feedback-msg').innerText = "";
+        document.getElementById('question-screen').classList.remove('hidden');
+    }
+
+    function typeNumpad(val) {
+        let disp = document.getElementById('answer-display');
+        if (val === 'del') state.currentAnswer = state.currentAnswer.slice(0, -1);
+        else if (state.currentAnswer.length < 8) state.currentAnswer += val;
+        disp.innerText = state.currentAnswer || "_";
+    }
+
+    function checkAnswer() {
+        state.totalQuestionsAsked++;
+        let isCorrect = state.currentAnswer === state.expectedAnswer;
+        let fb = document.getElementById('feedback-msg');
+        
+        if (isCorrect) {
+            fb.innerText = "¡CORRECTE! 🎉"; fb.className = "h-10 mt-4 cartoon-font text-3xl tracking-wide text-green-600";
+            state.correctAnswersStage++; state.totalCorrectAnswers++;
+            state.score += 100 * state.stage; state.consecutiveCorrect++;
+            state.energy = Math.min(100, state.energy + 5);
+            if (state.consecutiveCorrect >= 5 && state.superSpeedTimer === 0) activateSuperSpeed();
+        } else {
+            fb.innerText = `Incorrecte. Era: ${state.expectedAnswer}`; fb.className = "h-10 mt-4 cartoon-font text-3xl tracking-wide text-red-600";
+            state.energy -= 15; state.consecutiveCorrect = 0;
+        }
+
+        updateHUD();
+
+        setTimeout(() => {
+            document.getElementById('question-screen').classList.add('hidden');
+            state.questionsAnswered++;
+            state.paused = false;
+
+            if (state.energy <= 0) gameOver(false);
+            else if (state.questionsAnswered >= config.maxQuestionsPerStage) endStage();
+        }, 1500);
+    }
+
+    function activateSuperSpeed() {
+        state.superSpeedTimer = 400; 
+        document.getElementById('game-container').classList.add('super-speed-fx');
+        createParticles(entities.player.x, entities.player.y, '#fbbf24', 50);
+    }
+
+    function endStage() {
+        state.paused = true;
+        keys = { left: false, right: false, up: false }; 
+
+        let stageAcc = Math.round((state.correctAnswersStage / config.maxQuestionsPerStage) * 100);
+        
+        document.getElementById('stage-end-num').innerText = state.stage;
+        document.getElementById('stage-correct-txt').innerText = `${state.correctAnswersStage} de ${config.maxQuestionsPerStage}`;
+        document.getElementById('stage-acc-txt').innerText = `${stageAcc}%`;
+        document.getElementById('stage-score-txt').innerText = state.score;
+
+        let shield = Shields[state.stage];
+        document.getElementById('shield-container').innerHTML = `<div class="w-40 h-40 mx-auto pulse-shield">${shield.svg}</div>`;
+        document.getElementById('shield-name').innerText = shield.name;
+        document.getElementById('shield-name').style.color = shield.color;
+
+        document.getElementById('stage-screen').classList.remove('hidden');
+    }
+
+    function nextStage() {
+        document.getElementById('stage-screen').classList.add('hidden');
+        if (state.stage < 5) {
+            // En vez de empezar directo, mostramos la vitrina
+            showPreStage(state.stage + 1);
+        } else {
+            gameOver(true); 
+        }
+    }
+
+    function gameOver(victory) {
+        state.running = false;
+        document.getElementById('hud').classList.add('hidden');
+        document.getElementById('controls').classList.add('hidden');
+        
+        let goScreen = document.getElementById('gameover-screen');
+        goScreen.classList.remove('hidden');
+        
+        document.getElementById('end-title').innerText = victory ? "CAMPIONS DE LA PREMIER!" : "FI DEL JOC";
+        document.getElementById('end-title').className = `cartoon-font text-6xl mb-6 ${victory ? 'text-green-600' : 'text-red-600'}`;
+        
+        let acc = state.totalQuestionsAsked > 0 ? Math.round((state.totalCorrectAnswers / state.totalQuestionsAsked) * 100) : 0;
+        document.getElementById('end-msg').innerText = victory 
+            ? `Enhorabona ${state.playerName}! Has completat les 5 fases aconseguint tots els escuts i un ${acc}% d'encerts globals. Ets un autèntic crack!` 
+            : `T'has quedat sense energia. Segueix practicant! Encerts totals: ${acc}%`;
+        
+        document.getElementById('final-score').innerText = state.score;
+    }
+
+    function updateHUD() {
+        document.getElementById('player-name-hud').innerText = state.playerName;
+        document.getElementById('energy-fill').style.width = `${Math.max(0, state.energy)}%`;
+        document.getElementById('energy-text').innerText = Math.max(0, state.energy);
+        document.getElementById('energy-fill').style.backgroundColor = state.energy > 50 ? '#22c55e' : (state.energy > 20 ? '#f59e0b' : '#ef4444');
+        
+        document.getElementById('stage-hud').innerText = state.stage;
+        document.getElementById('score-hud').innerText = state.score;
+        document.getElementById('questions-hud').innerText = state.questionsAnswered;
+        
+        let acc = state.questionsAnswered > 0 ? Math.round((state.correctAnswersStage / state.questionsAnswered) * 100) : 0;
+        document.getElementById('correct-hud').innerText = acc;
+
+        let bonusUI = document.getElementById('bonus-indicator');
+        if (state.superSpeedTimer > 0) bonusUI.innerText = "⚡ SUPER VELOCITAT! ⚡";
+        else bonusUI.innerText = state.consecutiveCorrect > 0 ? `Ratxa: ${state.consecutiveCorrect}🔥` : "";
+    }
+
+    // Input
+    window.addEventListener('keydown', (e) => {
+        if (!state.running || state.paused) return;
+        if (e.code === 'ArrowRight' || e.code === 'KeyD') { keys.right = true; document.getElementById('btn-right').classList.add('active'); }
+        if (e.code === 'ArrowLeft' || e.code === 'KeyA') { keys.left = true; document.getElementById('btn-left').classList.add('active'); }
+        if (e.code === 'ArrowUp' || e.code === 'Space' || e.code === 'KeyW') { 
+            keys.up = true; document.getElementById('btn-jump').classList.add('active');
+            if(entities.player) entities.player.jump(); 
+        }
+    });
+
+    window.addEventListener('keyup', (e) => {
+        if (e.code === 'ArrowRight' || e.code === 'KeyD') { keys.right = false; document.getElementById('btn-right').classList.remove('active'); }
+        if (e.code === 'ArrowLeft' || e.code === 'KeyA') { keys.left = false; document.getElementById('btn-left').classList.remove('active'); }
+        if (e.code === 'ArrowUp' || e.code === 'Space' || e.code === 'KeyW') { keys.up = false; document.getElementById('btn-jump').classList.remove('active'); }
+    });
+
+    function setupBtn(id, keyName, isJump = false) {
+        const btn = document.getElementById(id);
+        const activate = (e) => { e.preventDefault(); if(!state.running || state.paused) return; keys[keyName] = true; btn.classList.add('active'); if (isJump && entities.player) entities.player.jump(); };
+        const deactivate = (e) => { e.preventDefault(); keys[keyName] = false; btn.classList.remove('active'); };
+        btn.addEventListener('pointerdown', activate); btn.addEventListener('pointerup', deactivate); btn.addEventListener('pointerleave', deactivate); btn.addEventListener('pointercancel', deactivate);
+    }
+    setupBtn('btn-left', 'left'); setupBtn('btn-right', 'right'); setupBtn('btn-jump', 'up', true);
+
+    function drawPreview(id, charName) {
+        let c = document.getElementById(id); let ctxP = c.getContext('2d');
+        ctxP.clearRect(0,0,100,120); ctxP.save(); ctxP.translate(50, 100); 
+        drawChibiCharacter(ctxP, charName, 0, false); ctxP.restore();
+    }
+    function selectCharacter(char) {
+        state.character = char;
+        document.getElementById('char-ana').classList.remove('border-blue-500', 'bg-blue-50'); document.getElementById('char-oscar').classList.remove('border-blue-500', 'bg-blue-50');
+        document.getElementById(`char-${char}`).classList.add('border-blue-500', 'bg-blue-50');
+    }
+
+    drawPreview('preview-ana', 'ana'); drawPreview('preview-oscar', 'oscar'); selectCharacter('ana');
+    document.getElementById('start-btn').addEventListener('click', startGame);
+    resizeCanvas();
+</script>
+</body>
+</html>
