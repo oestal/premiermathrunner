@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ca">
 <head>
-    <!-- Viewport estricto para evitar zoom en iPad y adaptar la pantalla -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Escola Splai FC - Premier Math Runner</title>
@@ -10,120 +9,75 @@
         @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Ubuntu:wght@400;700&display=swap');
 
         :root {
-            --primary: #1e3a8a; /* Blue */
-            --secondary: #10b981; /* Green grass */
-            --danger: #ef4444; /* Red defender */
-            --accent: #fbbf24; /* Yellow trophy/stars */
+            --primary: #1e3a8a;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --accent: #fbbf24;
         }
 
         body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100dvh; /* dvh evita problemas con las barras de Safari en iPad */
-            overflow: hidden;
-            background-color: #87CEEB;
+            margin: 0; padding: 0; width: 100%; height: 100dvh;
+            overflow: hidden; background-color: #87CEEB;
             font-family: 'Ubuntu', sans-serif;
-            touch-action: none; 
-            user-select: none;
-            -webkit-user-select: none;
+            touch-action: none; user-select: none; -webkit-user-select: none;
         }
 
         #game-container {
-            position: relative;
-            width: 100vw;
-            height: 100dvh;
-            background: linear-gradient(to bottom, #87CEEB 0%, #e0f6ff 60%, #4ade80 60%, #22c55e 100%);
+            position: relative; width: 100vw; height: 100dvh;
+            background: linear-gradient(to bottom, #87CEEB 0%, #e0f6ff 60%, #a5f3fc 100%);
+            transition: transform 0.1s ease-in-out;
         }
 
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
+        canvas { display: block; width: 100%; height: 100%; }
 
         .cartoon-font { font-family: 'Fredoka One', cursive; }
-
-        /* Ocultar barra de scroll en las ventanas para que sea limpio */
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* UI Overlays */
         .overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(5px);
-            z-index: 50;
-            transition: opacity 0.3s ease;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(5px);
+            z-index: 50; transition: opacity 0.3s ease;
         }
-
         .hidden { display: none !important; }
 
-        /* HUD MODERNIZADO - Ajustado para no tapar tanto en iPad */
+        /* HUD */
         #hud {
-            position: absolute;
-            top: 10px; left: 15px; right: 15px;
-            display: flex;
-            justify-content: space-between;
-            z-index: 10;
-            pointer-events: none;
-            transform: scale(0.9); /* Un pelín más pequeño para iPad Landscape */
-            transform-origin: top center;
+            position: absolute; top: 10px; left: 15px; right: 15px;
+            display: flex; justify-content: space-between; z-index: 10; pointer-events: none;
+            transform: scale(0.9); transform-origin: top center;
         }
-
         .hud-panel {
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(8px);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            padding: 10px 15px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            color: white;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px);
+            border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 20px;
+            padding: 10px 15px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
         }
-
         .hud-bar { width: 150px; height: 18px; background: #333; border: 2px solid white; border-radius: 10px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
         #energy-fill { width: 100%; height: 100%; background: #22c55e; transition: width 0.3s, background-color 0.3s; }
         
-        /* Controls - Levantados un poco para no chocar con el borde del iPad */
+        /* Controles táctiles */
         #controls {
-            position: absolute;
-            bottom: 30px; 
-            left: 0; right: 0;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 40px;
-            z-index: 20;
-            pointer-events: none;
+            position: absolute; bottom: 30px; left: 0; right: 0;
+            display: flex; justify-content: space-between; padding: 0 40px; z-index: 20; pointer-events: none;
         }
-        
         .d-pad { display: flex; gap: 20px; pointer-events: auto; }
+        .action-pad { pointer-events: auto; }
         .control-btn {
-            width: 70px; height: 70px;
-            background: rgba(255,255,255,0.4); border: 4px solid white; border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            color: white; font-size: 2rem; font-weight: bold;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3); backdrop-filter: blur(4px);
-            transition: transform 0.1s, background 0.1s;
+            width: 70px; height: 70px; background: rgba(255,255,255,0.4); border: 4px solid white; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; color: white; font-size: 2rem; font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); backdrop-filter: blur(4px); transition: transform 0.1s, background 0.1s;
         }
         .control-btn:active, .control-btn.active { transform: scale(0.9) translateY(4px); background: rgba(255,255,255,0.8); color: var(--primary); }
-        .action-pad { pointer-events: auto; }
 
-        /* Modals - Con scroll interno por si la pantalla horizontal es muy bajita */
+        /* Modals y UI */
         .modal-box {
-            background: white; border-radius: 30px; padding: 20px 30px; width: 90%;
-            max-height: 95dvh; overflow-y: auto;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5); transform: scale(0.9);
-            animation: popIn 0.3s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: white; border-radius: 30px; padding: 20px 30px; width: 90%; max-height: 95dvh; overflow-y: auto;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); transform: scale(0.9); animation: popIn 0.3s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         @keyframes popIn { to { transform: scale(1); } }
 
-        /* Numpad - Más compacto verticalmente */
         .numpad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
         .numpad button { background: #f3f4f6; border: 2px solid #d1d5db; border-radius: 12px; font-size: 1.5rem; padding: 10px 0; font-weight: bold; color: #1f2937; cursor: pointer; box-shadow: 0 4px 0 #d1d5db; transition: all 0.1s; }
         .numpad button:active { transform: translateY(4px); box-shadow: 0 0 0 #d1d5db; }
@@ -131,21 +85,18 @@
         .numpad button.action-btn.del { background: #ef4444; border-color: #dc2626; box-shadow: 0 4px 0 #dc2626; }
         .numpad button.action-btn.ok { background: #10b981; border-color: #059669; box-shadow: 0 4px 0 #059669; grid-column: span 2; }
 
-        #answer-display {
-            font-size: 2.5rem; min-height: 3.5rem; background: #e5e7eb; border-radius: 15px; margin: 10px 0;
-            display: flex; align-items: center; justify-content: center; font-family: 'Fredoka One', cursive;
-            color: var(--primary); letter-spacing: 2px; box-shadow: inset 0 4px 6px rgba(0,0,0,0.1);
-        }
-
+        #answer-display { font-size: 2.5rem; min-height: 3.5rem; background: #e5e7eb; border-radius: 15px; margin: 10px 0; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka One', cursive; color: var(--primary); letter-spacing: 2px; box-shadow: inset 0 4px 6px rgba(0,0,0,0.1); }
         .fraction-visual { display: inline-grid; gap: 4px; padding: 4px; background: #333; border-radius: 8px; margin: 5px auto; }
         .fraction-cell { width: 30px; height: 30px; background: white; border-radius: 4px; }
         .fraction-cell.filled { background: var(--primary); }
 
         .super-speed-fx { animation: dashSpeed 0.3s infinite alternate; }
         @keyframes dashSpeed { 0% { box-shadow: inset 0 0 50px rgba(251, 191, 36, 0.2); } 100% { box-shadow: inset 0 0 100px rgba(251, 191, 36, 0.6); } }
-        
         .pulse-shield { animation: pulseShield 1.5s infinite; }
         @keyframes pulseShield { 0% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(250, 204, 21, 0.8)); } 70% { transform: scale(1.05); filter: drop-shadow(0 0 15px rgba(250, 204, 21, 0)); } 100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(250, 204, 21, 0)); } }
+        
+        .damage-flash { animation: damageFlash 0.3s ease-out; }
+        @keyframes damageFlash { 0% { transform: translateY(10px); background-color: rgba(239, 68, 68, 0.5); } 100% { transform: translateY(0); background-color: transparent; } }
     </style>
 </head>
 <body>
@@ -153,17 +104,14 @@
 <div id="game-container">
     <canvas id="gameCanvas"></canvas>
 
-    <!-- HUD MODERNIZADO Y AMPLIADO -->
+    <!-- HUD -->
     <div id="hud" class="hidden">
-        <!-- Panel Izquierdo -->
         <div class="hud-panel flex flex-col gap-1">
             <div class="text-2xl md:text-3xl cartoon-font text-white" id="player-name-hud">Jugador</div>
             <div class="hud-bar"><div id="energy-fill"></div></div>
             <div class="text-lg md:text-xl font-bold">Energia: <span id="energy-text" class="text-green-400">100</span>%</div>
             <div class="text-base md:text-lg text-yellow-300 font-bold cartoon-font tracking-wide" id="bonus-indicator"></div>
         </div>
-        
-        <!-- Panel Derecho -->
         <div class="hud-panel flex flex-col gap-1 items-end">
             <div class="cartoon-font text-3xl md:text-4xl text-yellow-400">FASE <span id="stage-hud">1</span></div>
             <div class="text-lg md:text-xl font-bold bg-blue-900/40 px-2 py-1 rounded-lg border border-white/20">Punts: <span id="score-hud" class="text-yellow-300">0</span></div>
@@ -172,7 +120,7 @@
         </div>
     </div>
 
-    <!-- Controles iPad -->
+    <!-- Controles -->
     <div id="controls" class="hidden">
         <div class="d-pad">
             <button class="control-btn" id="btn-left">◀</button>
@@ -185,15 +133,12 @@
 
     <!-- Menú Principal -->
     <div id="menu-screen" class="overlay">
-        <!-- scrollbar-hide permite scroll si no cabe, pero sin mostrar la fea barra -->
         <div class="modal-box scrollbar-hide border-8 border-blue-900 max-w-2xl text-center flex flex-col justify-center">
             <h1 class="cartoon-font text-4xl md:text-5xl text-blue-900 mb-1 tracking-wide">Escola Splai FC</h1>
             <h2 class="text-xl md:text-2xl text-gray-700 mb-4 font-bold uppercase tracking-widest">Premier Math Runner</h2>
-            
             <div class="mb-4">
                 <input type="text" id="player-name" class="w-full text-center text-2xl font-bold p-3 border-4 border-gray-300 rounded-2xl focus:border-blue-500 outline-none" placeholder="Escriu el teu nom..." autocomplete="off">
             </div>
-
             <p class="text-gray-700 font-bold mb-2 text-lg">Selecciona el teu jugador:</p>
             <div class="flex justify-center gap-4 mb-4">
                 <div class="character-select border-4 border-gray-300 rounded-3xl p-2 cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all transform hover:scale-105" onclick="selectCharacter('ana')" id="char-ana">
@@ -205,98 +150,63 @@
                     <p class="cartoon-font text-xl mt-1 text-gray-800">Oscar</p>
                 </div>
             </div>
-
             <button id="start-btn" class="cartoon-font w-full bg-green-500 hover:bg-green-600 text-white p-4 rounded-2xl text-2xl md:text-3xl shadow-[0_6px_0_#166534] active:translate-y-2 active:shadow-none transition-all tracking-wider">A JUGAR!</button>
         </div>
     </div>
 
-    <!-- Pantalla Pre-Fase (VITRINA DE ESCUDOS) -->
+    <!-- Pantalla Pre-Fase -->
     <div id="pre-stage-screen" class="overlay hidden">
         <div class="modal-box scrollbar-hide border-8 border-yellow-400 max-w-4xl text-center bg-gray-50">
             <h2 class="cartoon-font text-4xl md:text-5xl text-blue-900 mb-1">LA TEVA COL·LECCIÓ</h2>
             <p class="text-lg md:text-xl font-bold text-gray-500 mb-4 uppercase tracking-wider">Aconsegueix els 5 escuts!</p>
-            
-            <div class="flex flex-wrap justify-center gap-2 md:gap-4 mb-4 md:mb-6" id="shields-gallery">
-                <!-- Se rellena con JS -->
-            </div>
-
+            <div class="flex flex-wrap justify-center gap-2 md:gap-4 mb-4 md:mb-6" id="shields-gallery"></div>
             <div class="bg-blue-100 border-l-8 border-blue-500 p-4 rounded-xl mb-4 text-left">
                 <h3 class="text-2xl md:text-3xl font-bold text-blue-900 mb-1" id="pre-stage-title">Preparat per la Fase X?</h3>
-                <p class="text-lg md:text-xl text-blue-800 font-semibold" id="pre-stage-desc">Agafa els balons matemàtics per respondre preguntes i esquiva els defensors de vermell!</p>
+                <p class="text-lg md:text-xl text-blue-800 font-semibold" id="pre-stage-desc">Salta plataformes, evita els precipicis i resol matemàtiques!</p>
             </div>
-
             <button onclick="startStageFromPre()" class="cartoon-font w-full bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-2xl text-2xl md:text-4xl shadow-[0_6px_0_#1e3a8a] active:translate-y-2 active:shadow-none transition-all uppercase">
                 COMENÇAR FASE <span id="pre-stage-btn-num"></span>
             </button>
         </div>
     </div>
 
-    <!-- Modal de Pregunta -->
+    <!-- Modal Pregunta -->
     <div id="question-screen" class="overlay hidden">
         <div class="modal-box scrollbar-hide max-w-2xl border-8 border-blue-600 text-center">
             <div class="flex justify-between items-center mb-2">
                 <span class="bg-blue-100 text-blue-800 text-base md:text-lg font-bold px-3 py-1 rounded-full uppercase">Fase <span id="q-stage"></span></span>
                 <span class="bg-green-100 text-green-800 text-base md:text-lg font-bold px-3 py-1 rounded-full uppercase">Pregunta <span id="q-progress"></span> / 40</span>
             </div>
-            
             <h3 id="question-text" class="text-2xl md:text-3xl font-bold text-gray-800 mb-2 leading-tight"></h3>
             <div id="question-visual" class="mb-2 min-h-[50px] flex justify-center items-center"></div>
-            
             <div id="answer-display">_</div>
-
             <div class="numpad" id="numpad-container">
-                <button onclick="typeNumpad('1')">1</button>
-                <button onclick="typeNumpad('2')">2</button>
-                <button onclick="typeNumpad('3')">3</button>
-                <button onclick="typeNumpad('/')" class="action-btn" title="Fracció">/</button>
-                
-                <button onclick="typeNumpad('4')">4</button>
-                <button onclick="typeNumpad('5')">5</button>
-                <button onclick="typeNumpad('6')">6</button>
-                <button onclick="typeNumpad(',')" class="action-btn" title="Decimal">,</button>
-                
-                <button onclick="typeNumpad('7')">7</button>
-                <button onclick="typeNumpad('8')">8</button>
-                <button onclick="typeNumpad('9')">9</button>
-                <button onclick="typeNumpad('del')" class="action-btn del">⌫</button>
-                
-                <button onclick="typeNumpad('-')">-</button>
-                <button onclick="typeNumpad('0')">0</button>
-                <button onclick="checkAnswer()" class="action-btn ok cartoon-font">OK</button>
+                <button onclick="typeNumpad('1')">1</button> <button onclick="typeNumpad('2')">2</button> <button onclick="typeNumpad('3')">3</button> <button onclick="typeNumpad('/')" class="action-btn" title="Fracció">/</button>
+                <button onclick="typeNumpad('4')">4</button> <button onclick="typeNumpad('5')">5</button> <button onclick="typeNumpad('6')">6</button> <button onclick="typeNumpad(',')" class="action-btn" title="Decimal">,</button>
+                <button onclick="typeNumpad('7')">7</button> <button onclick="typeNumpad('8')">8</button> <button onclick="typeNumpad('9')">9</button> <button onclick="typeNumpad('del')" class="action-btn del">⌫</button>
+                <button onclick="typeNumpad('-')">-</button> <button onclick="typeNumpad('0')">0</button> <button onclick="checkAnswer()" class="action-btn ok cartoon-font">OK</button>
             </div>
             <div id="feedback-msg" class="h-8 mt-2 cartoon-font text-2xl tracking-wide"></div>
         </div>
     </div>
 
-    <!-- Pantalla Fin de Fase -->
+    <!-- Pantalla Fin Fase -->
     <div id="stage-screen" class="overlay hidden">
         <div class="modal-box scrollbar-hide border-8 border-yellow-400 max-w-2xl text-center">
             <h2 class="cartoon-font text-4xl md:text-5xl text-yellow-500 mb-1">FASE <span id="stage-end-num"></span> SUPERADA!</h2>
             <div class="my-4" id="shield-container"></div>
             <h3 class="cartoon-font text-3xl md:text-4xl text-blue-900" id="shield-name"></h3>
             <p class="text-gray-600 mb-4 font-bold uppercase tracking-wider text-lg md:text-xl">Escut afegit a la col·lecció!</p>
-            
             <div class="bg-gray-100 p-4 rounded-2xl mb-4 text-left border-4 border-gray-200">
-                <p class="text-xl font-bold text-gray-800 border-b-4 border-gray-300 pb-2 mb-2">El teu Rendiment:</p>
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-lg md:text-xl font-bold">Respostes correctes:</span>
-                    <span id="stage-correct-txt" class="text-xl md:text-2xl font-bold text-green-600 bg-green-100 px-3 py-1 rounded-xl"></span>
-                </div>
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-lg md:text-xl font-bold">Precisió:</span>
-                    <span id="stage-acc-txt" class="text-xl md:text-2xl font-bold text-blue-600"></span>
-                </div>
-                <div class="flex justify-between items-center mt-4 pt-2 border-t-4 border-gray-300">
-                    <span class="text-xl md:text-2xl font-bold">Puntuació de la Fase:</span>
-                    <span id="stage-score-txt" class="text-3xl md:text-4xl cartoon-font text-yellow-500 drop-shadow"></span>
-                </div>
+                <div class="flex justify-between items-center mb-2"><span class="font-bold">Respostes correctes:</span><span id="stage-correct-txt" class="font-bold text-green-600 bg-green-100 px-3 py-1 rounded-xl"></span></div>
+                <div class="flex justify-between items-center mb-2"><span class="font-bold">Precisió:</span><span id="stage-acc-txt" class="font-bold text-blue-600"></span></div>
+                <div class="flex justify-between items-center mt-4 pt-2 border-t-4 border-gray-300"><span class="text-xl font-bold">Puntuació:</span><span id="stage-score-txt" class="text-3xl cartoon-font text-yellow-500 drop-shadow"></span></div>
             </div>
-
             <button onclick="nextStage()" class="cartoon-font w-full bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-2xl text-2xl md:text-3xl shadow-[0_6px_0_#1e3a8a] active:translate-y-2 active:shadow-none transition-all">AVANÇAR</button>
         </div>
     </div>
 
-    <!-- Pantalla Game Over / Victoria -->
+    <!-- Pantalla Game Over -->
     <div id="gameover-screen" class="overlay hidden">
         <div class="modal-box scrollbar-hide border-8 border-red-500 max-w-2xl text-center">
             <h2 class="cartoon-font text-5xl md:text-6xl mb-4" id="end-title">FI DEL JOC</h2>
@@ -312,154 +222,37 @@
 </div>
 
 <script>
-    /* --- GAME CONFIG & STATE --- */
+    /* --- CONFIG & ESTADO --- */
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     
     let keys = { left: false, right: false, up: false };
 
     let state = {
-        running: false,
-        paused: false,
-        playerName: 'Jugador',
-        character: 'ana', 
-        stage: 1,
-        score: 0,
-        energy: 100,
-        speedMultiplier: 1,
-        questionsAnswered: 0,
-        correctAnswersStage: 0,
-        totalCorrectAnswers: 0,
-        totalQuestionsAsked: 0,
-        consecutiveCorrect: 0,
-        superSpeedTimer: 0,
-        currentAnswer: "",
-        expectedAnswer: "",
-        cameraX: 0,
-        nextSpawnDist: 800,
-        frames: 0
+        running: false, paused: false,
+        playerName: 'Jugador', character: 'ana', 
+        stage: 1, score: 0, energy: 100, speedMultiplier: 1,
+        questionsAnswered: 0, correctAnswersStage: 0,
+        totalCorrectAnswers: 0, totalQuestionsAsked: 0,
+        consecutiveCorrect: 0, superSpeedTimer: 0,
+        currentAnswer: "", expectedAnswer: "",
+        cameraX: 0, frames: 0, lastPlatformEnd: 0,
+        
+        // SISTEMA DE MEMORIA DE PREGUNTAS
+        askedQuestions: new Set(), // Almacena el texto de las preguntas ya hechas
+        failedPool: [],            // Almacena las preguntas falladas para repetirlas
+        currentQuestionObj: null   // Guarda el objeto actual por si se falla
     };
 
     const config = {
         maxQuestionsPerStage: 40,
-        baseSpeed: 7,
-        gravity: 0.7,
-        jumpForce: -14,
+        baseSpeed: 7, gravity: 0.7, jumpForce: -14.5,
         groundHeight: 140
     };
 
-    let entities = { player: null, obstacles: [], particles: [] };
+    let entities = { player: null, obstacles: [], particles: [], platforms: [] };
 
-    /* --- MATH QUESTION ENGINE (Fichas 24-37) --- */
-    const MathEngine = {
-        generate(stage) {
-            let q = { text: "", visual: null, answer: "" };
-            const typeRand = Math.random();
-
-            if (stage === 1) {
-                if (typeRand < 0.5) {
-                    let den = Math.floor(Math.random() * 8) + 2;
-                    let num = Math.floor(Math.random() * (den - 1)) + 1;
-                    q.text = `Quina fracció representa la imatge?`;
-                    q.visual = () => this.drawFractionGrid(num, den);
-                    q.answer = `${num}/${den}`;
-                } else if (typeRand < 0.8) {
-                    let enteros = Math.floor(Math.random() * 10);
-                    let dec = Math.floor(Math.random() * 99) + 1;
-                    q.text = `Escriu el nombre: ${enteros} unitats i ${dec} centèsimes`;
-                    q.answer = `${enteros},${dec < 10 ? '0'+dec : dec}`;
-                } else {
-                    let n = Math.floor(Math.random()*5)+1;
-                    let d = n + Math.floor(Math.random()*4)+1;
-                    q.text = `Escriu la fracció: ${n} dividit entre ${d}`;
-                    q.answer = `${n}/${d}`;
-                }
-            } 
-            else if (stage === 2) {
-                if (typeRand < 0.5) {
-                    let enter = Math.floor(Math.random() * 5) + 1;
-                    let den = Math.floor(Math.random() * 5) + 2;
-                    let num = Math.floor(Math.random() * (den - 1)) + 1;
-                    q.text = `Passa a fracció el nombre mixt: ${enter} i ${num}/${den}`;
-                    q.answer = `${(enter * den) + num}/${den}`;
-                } else {
-                    let n1 = Math.floor(Math.random()*4)+1;
-                    let d1 = Math.floor(Math.random()*4)+2;
-                    let mult = Math.floor(Math.random()*3)+2;
-                    q.text = `Escriu una fracció equivalent a ${n1}/${d1} multiplicant per ${mult}`;
-                    q.answer = `${n1*mult}/${d1*mult}`;
-                }
-            }
-            else if (stage === 3) {
-                if (typeRand < 0.5) {
-                    let den = Math.floor(Math.random() * 10) + 3;
-                    let n1 = Math.floor(Math.random() * 5) + 1;
-                    let n2 = Math.floor(Math.random() * 5) + 1;
-                    let op = Math.random() < 0.5 ? '+' : '-';
-                    if (op === '-' && n1 < n2) { let temp = n1; n1 = n2; n2 = temp; }
-                    q.text = `Resol: ${n1}/${den} ${op} ${n2}/${den}`;
-                    q.answer = op === '+' ? `${n1+n2}/${den}` : `${n1-n2}/${den}`;
-                } else {
-                    let d1 = (Math.random() * 10).toFixed(1);
-                    let d2 = (Math.random() * 10).toFixed(1);
-                    q.text = `Suma: ${d1.replace('.',',')} + ${d2.replace('.',',')}`;
-                    let res = parseFloat(d1) + parseFloat(d2);
-                    q.answer = res.toFixed(1).replace('.',',');
-                    if(q.answer.endsWith(',0')) q.answer = q.answer.substring(0, q.answer.length - 2);
-                }
-            }
-            else if (stage === 4) {
-                if (typeRand < 0.6) {
-                    let pairs = [[2,4], [3,6], [2,6], [4,8], [5,10]];
-                    let pair = pairs[Math.floor(Math.random()*pairs.length)];
-                    let n1 = 1; let d1 = pair[0];
-                    let n2 = 1; let d2 = pair[1];
-                    q.text = `Suma: ${n1}/${d1} + ${n2}/${d2} (sense simplificar)`;
-                    let factor = d2 / d1;
-                    let finalN = (n1 * factor) + n2;
-                    q.answer = `${finalN}/${d2}`;
-                } else {
-                    let d1 = (Math.random() * 20 + 10).toFixed(2);
-                    let d2 = (Math.random() * 9).toFixed(2);
-                    q.text = `Resta: ${d1.replace('.',',')} - ${d2.replace('.',',')}`;
-                    let res = parseFloat(d1) - parseFloat(d2);
-                    q.answer = res.toFixed(2).replace('.',',');
-                    if(q.answer.endsWith('0')) q.answer = q.answer.slice(0, -1);
-                    if(q.answer.endsWith(',')) q.answer = q.answer.slice(0, -1);
-                }
-            }
-            else if (stage === 5) {
-                if (typeRand < 0.5) {
-                    let n1 = Math.floor(Math.random() * 4) + 1;
-                    let d1 = Math.floor(Math.random() * 4) + 2;
-                    let n2 = Math.floor(Math.random() * 4) + 1;
-                    let d2 = Math.floor(Math.random() * 4) + 2;
-                    q.text = `Multiplica: ${n1}/${d1} x ${n2}/${d2}`;
-                    q.answer = `${n1*n2}/${d1*d2}`;
-                } else {
-                    let enteros = Math.floor(Math.random() * 8) + 2;
-                    let dec = (Math.random() * 5).toFixed(1);
-                    q.text = `Multiplica: ${enteros} x ${dec.replace('.',',')}`;
-                    let res = enteros * parseFloat(dec);
-                    q.answer = res.toFixed(1).replace('.',',');
-                    if(q.answer.endsWith(',0')) q.answer = q.answer.substring(0, q.answer.length - 2);
-                }
-            }
-            return q;
-        },
-
-        drawFractionGrid(num, den) {
-            let cols = Math.ceil(Math.sqrt(den));
-            let html = `<div class="fraction-visual" style="grid-template-columns: repeat(${cols}, 1fr);">`;
-            for(let i=0; i<den; i++) {
-                html += `<div class="fraction-cell ${i < num ? 'filled' : ''}"></div>`;
-            }
-            html += `</div>`;
-            return html;
-        }
-    };
-
-    // ESCUDOS ACTUALIZADOS CON IMÁGENES ONLINE
+    /* --- RECURSOS (Escudos) --- */
     const Shields = {
         1: { name: "Manchester City", color: "#6CABDD", img: "http://blocs.xtec.cat/anglesceipsplai/files/2025/07/image-8.png" },
         2: { name: "Liverpool", color: "#C8102E", img: "http://blocs.xtec.cat/anglesceipsplai/files/2025/07/image-10.png" },
@@ -468,26 +261,114 @@
         5: { name: "Manchester Utd", color: "#DA291C", img: "http://blocs.xtec.cat/anglesceipsplai/files/2025/07/image-7.png" }
     };
 
-    /* --- GAME ENGINE (Classes) --- */
+    /* --- MOTOR DE PREGUNTAS (Fichas 24-37) --- */
+    const MathEngine = {
+        generate(stage) {
+            let q = { text: "", visual: null, answer: "" };
+            const t = Math.random();
+
+            if (stage === 1) {
+                if (t < 0.5) { let d = Math.floor(Math.random()*8)+2; let n = Math.floor(Math.random()*(d-1))+1; q.text = `Quina fracció representa la imatge?`; q.visual = () => this.grid(n, d); q.answer = `${n}/${d}`; }
+                else if (t < 0.8) { let e = Math.floor(Math.random()*10); let c = Math.floor(Math.random()*99)+1; q.text = `Escriu: ${e} unitats i ${c} centèsimes`; q.answer = `${e},${c<10?'0'+c:c}`; }
+                else { let n = Math.floor(Math.random()*5)+1; let d = n + Math.floor(Math.random()*4)+1; q.text = `Fracció: ${n} dividit entre ${d}`; q.answer = `${n}/${d}`; }
+            } 
+            else if (stage === 2) {
+                if (t < 0.5) { let e = Math.floor(Math.random()*5)+1; let d = Math.floor(Math.random()*5)+2; let n = Math.floor(Math.random()*(d-1))+1; q.text = `Passa a fracció el mixt: ${e} i ${n}/${d}`; q.answer = `${(e*d)+n}/${d}`; }
+                else { let n = Math.floor(Math.random()*4)+1; let d = Math.floor(Math.random()*4)+2; let m = Math.floor(Math.random()*3)+2; q.text = `Equivalent a ${n}/${d} multiplicant per ${m}`; q.answer = `${n*m}/${d*m}`; }
+            }
+            else if (stage === 3) {
+                if (t < 0.5) { let d = Math.floor(Math.random()*10)+3; let n1 = Math.floor(Math.random()*5)+1; let n2 = Math.floor(Math.random()*5)+1; let op = Math.random()<0.5?'+':'-'; if(op==='-'&&n1<n2){let tmp=n1;n1=n2;n2=tmp;} q.text = `Resol: ${n1}/${d} ${op} ${n2}/${d}`; q.answer = op==='+'?`${n1+n2}/${d}`:`${n1-n2}/${d}`; }
+                else { let d1 = (Math.random()*10).toFixed(1); let d2 = (Math.random()*10).toFixed(1); q.text = `Suma: ${d1.replace('.',',')} + ${d2.replace('.',',')}`; q.answer = (parseFloat(d1)+parseFloat(d2)).toFixed(1).replace('.',',').replace(/,0$/,''); }
+            }
+            else if (stage === 4) {
+                if (t < 0.6) { let pairs = [[2,4], [3,6], [2,6], [4,8], [5,10]]; let p = pairs[Math.floor(Math.random()*pairs.length)]; let n1=1, d1=p[0], n2=1, d2=p[1]; q.text = `Suma: ${n1}/${d1} + ${n2}/${d2} (sense simplificar)`; q.answer = `${(n1*(d2/d1))+n2}/${d2}`; }
+                else { let d1 = (Math.random()*20+10).toFixed(2); let d2 = (Math.random()*9).toFixed(2); q.text = `Resta: ${d1.replace('.',',')} - ${d2.replace('.',',')}`; let res = (parseFloat(d1)-parseFloat(d2)).toFixed(2).replace('.',','); if(res.endsWith('0'))res=res.slice(0,-1); if(res.endsWith(','))res=res.slice(0,-1); q.answer = res; }
+            }
+            else if (stage === 5) {
+                if (t < 0.5) { let n1=Math.floor(Math.random()*4)+1; let d1=Math.floor(Math.random()*4)+2; let n2=Math.floor(Math.random()*4)+1; let d2=Math.floor(Math.random()*4)+2; q.text = `Multiplica: ${n1}/${d1} x ${n2}/${d2}`; q.answer = `${n1*n2}/${d1*d2}`; }
+                else { let e = Math.floor(Math.random()*8)+2; let d = (Math.random()*5).toFixed(1); q.text = `Multiplica: ${e} x ${d.replace('.',',')}`; q.answer = (e*parseFloat(d)).toFixed(1).replace('.',',').replace(/,0$/,''); }
+            }
+            return q;
+        },
+        grid(num, den) {
+            let cols = Math.ceil(Math.sqrt(den)); let h = `<div class="fraction-visual" style="grid-template-columns: repeat(${cols}, 1fr);">`;
+            for(let i=0; i<den; i++) h += `<div class="fraction-cell ${i<num?'filled':''}"></div>`;
+            return h + `</div>`;
+        }
+    };
+
+    /* --- UTILIDADES --- */
+    function isCollidingRect(x1, y1, w1, h1, x2, y2, w2, h2) {
+        return x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && y1 + h1 > y2;
+    }
+
+    /* --- GENERADOR DE MUNDO MODO MARIO BROS --- */
+    function generateWorldChunks() {
+        // Generar mundo adelante según avanzamos
+        while (state.lastPlatformEnd < state.cameraX + canvas.width * 2) {
+            
+            // Primer tramo seguro (sin precipicios)
+            if (state.lastPlatformEnd === 0) {
+                entities.platforms.push({ x: 0, y: canvas.height - config.groundHeight, w: 1500, h: config.groundHeight + 200, isFloor: true, jumpThrough: false });
+                state.lastPlatformEnd = 1500;
+                continue;
+            }
+
+            // Probabilidad de precipicio
+            let hasPit = Math.random() < 0.35; 
+            let pitWidth = hasPit ? 120 + Math.random() * 80 : 0; 
+            
+            let startX = state.lastPlatformEnd + pitWidth;
+            let platW = 400 + Math.random() * 800;
+            let floorY = canvas.height - config.groundHeight;
+
+            // Suelo Principal
+            entities.platforms.push({ x: startX, y: floorY, w: platW, h: config.groundHeight + 200, isFloor: true, jumpThrough: false });
+
+            // Plataformas flotantes estilo Mario
+            if (platW > 400 && Math.random() < 0.6) {
+                let floatW = 150 + Math.random() * 200;
+                let floatX = startX + 50 + Math.random() * (platW - floatW - 100);
+                let floatY = floorY - 110 - Math.random() * 50; 
+                entities.platforms.push({ x: floatX, y: floatY, w: floatW, h: 25, isFloor: false, jumpThrough: true });
+
+                // Balón Matemático en plataforma flotante? (40% probabilidad)
+                if (Math.random() < 0.4) {
+                    entities.obstacles.push(new Obstacle(floatX + floatW/2, floatY, 'mathball'));
+                }
+            }
+
+            // Enemigos u objetos en el suelo firme
+            if (Math.random() < 0.7) {
+                let obsX = startX + 200 + Math.random() * (platW - 400); 
+                if (obsX > startX + 50 && obsX < startX + platW - 50) {
+                    let type = Math.random() < 0.6 ? 'defender' : 'mathball';
+                    if (entities.obstacles.filter(o => o.type === 'mathball').length < 1) type = 'mathball';
+                    entities.obstacles.push(new Obstacle(obsX, floorY, type));
+                }
+            }
+
+            state.lastPlatformEnd = startX + platW;
+        }
+
+        entities.platforms = entities.platforms.filter(p => p.x + p.w > state.cameraX - 500);
+        entities.obstacles = entities.obstacles.filter(o => o.x > state.cameraX - 500);
+    }
+
+    /* --- CLASES --- */
     class Player {
         constructor() {
             this.w = 50; this.h = 80; 
-            this.x = 200; 
-            this.y = 0;
-            this.vy = 0;
-            this.vx = 0;
-            this.isJumping = false;
-            this.animFrame = 0;
-            this.invincible = 0;
-            this.facing = 1; 
-            this.resetPos();
+            this.x = 200; this.y = 0; 
+            this.vy = 0; this.vx = 0;
+            this.isJumping = false; this.animFrame = 0;
+            this.invincible = 0; this.facing = 1; 
         }
 
         resetPos() {
-            this.y = canvas.height - config.groundHeight;
-            this.vy = 0;
-            this.vx = 0;
-            this.isJumping = false;
+            this.x = 200;
+            this.y = canvas.height - config.groundHeight - 50;
+            this.vy = 0; this.vx = 0; this.isJumping = false;
         }
 
         jump() {
@@ -501,41 +382,60 @@
         update() {
             let currentSpeed = config.baseSpeed * state.speedMultiplier;
             
-            if (keys.right) {
-                this.vx = currentSpeed;
-                this.facing = 1;
-                this.animFrame += 0.3 * state.speedMultiplier;
-            } else if (keys.left) {
-                this.vx = -currentSpeed;
-                this.facing = -1;
-                this.animFrame += 0.3 * state.speedMultiplier;
-            } else {
-                this.vx = 0;
-                this.animFrame = 0; 
-            }
+            if (keys.right) { this.vx = currentSpeed; this.facing = 1; this.animFrame += 0.3 * state.speedMultiplier; } 
+            else if (keys.left) { this.vx = -currentSpeed; this.facing = -1; this.animFrame += 0.3 * state.speedMultiplier; } 
+            else { this.vx = 0; this.animFrame = 0; }
 
             this.x += this.vx;
 
+            if (this.x < state.cameraX + 25) { this.x = state.cameraX + 25; this.vx = 0; }
             let pushRightBoundary = state.cameraX + canvas.width * 0.4;
-            let pushLeftBoundary = state.cameraX + canvas.width * 0.1;
+            if (this.x > pushRightBoundary) state.cameraX = this.x - canvas.width * 0.4;
 
-            if (this.x > pushRightBoundary) {
-                state.cameraX = this.x - canvas.width * 0.4;
-            } else if (this.x < pushLeftBoundary) {
-                state.cameraX = this.x - canvas.width * 0.1;
+            for (let p of entities.platforms) {
+                if (!p.jumpThrough && isCollidingRect(this.x - this.w/2, this.y - this.h, this.w, this.h, p.x, p.y, p.w, p.h)) {
+                    if (this.vx > 0) { this.x = p.x - this.w/2; this.vx = 0; }
+                    else if (this.vx < 0) { this.x = p.x + p.w + this.w/2; this.vx = 0; }
+                }
             }
-
-            if (state.cameraX < 0) state.cameraX = 0;
-            if (this.x < 50) this.x = 50; 
 
             this.vy += config.gravity;
             this.y += this.vy;
+            let grounded = false;
 
-            let floorY = canvas.height - config.groundHeight;
-            if (this.y > floorY) {
-                this.y = floorY;
+            for (let p of entities.platforms) {
+                if (isCollidingRect(this.x - this.w/2, this.y - this.h, this.w, this.h, p.x, p.y, p.w, p.h)) {
+                    if (this.vy > 0) { 
+                        let prevY = (this.y - this.vy); 
+                        if (prevY <= p.y + 15) { 
+                            this.y = p.y;
+                            this.vy = 0;
+                            this.isJumping = false;
+                            grounded = true;
+                        }
+                    } else if (this.vy < 0 && !p.jumpThrough) { 
+                        this.y = p.y + p.h + this.h;
+                        this.vy = 0;
+                    }
+                }
+            }
+
+            if (!grounded) this.isJumping = true; 
+
+            if (this.y > canvas.height + 150) {
+                state.energy -= 20;
+                this.invincible = 60;
+                
+                document.getElementById('game-container').classList.add('damage-flash');
+                setTimeout(()=>document.getElementById('game-container').classList.remove('damage-flash'), 300);
+
+                let safePlat = entities.platforms.slice().reverse().find(plat => plat.x < this.x && !plat.jumpThrough && plat.w >= 200);
+                if (safePlat) { this.x = safePlat.x + 100; } else { this.x = state.cameraX + 100; }
+                this.y = -50; 
                 this.vy = 0;
-                this.isJumping = false;
+                state.consecutiveCorrect = 0;
+                updateHUD();
+                if (state.energy <= 0) gameOver(false);
             }
 
             if (this.invincible > 0) this.invincible--;
@@ -547,15 +447,11 @@
             ctx.translate(screenX, this.y);
             ctx.scale(this.facing, 1);
             
-            if (this.invincible > 0 && Math.floor(Date.now() / 100) % 2 === 0) {
-                ctx.globalAlpha = 0.5;
-            }
+            if (this.invincible > 0 && Math.floor(Date.now() / 100) % 2 === 0) ctx.globalAlpha = 0.5;
 
             if (state.superSpeedTimer > 0) {
                 ctx.fillStyle = 'rgba(251, 191, 36, 0.4)';
-                ctx.beginPath();
-                ctx.arc(0, -40, 60 + Math.sin(Date.now()/50)*10, 0, Math.PI*2);
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(0, -40, 60 + Math.sin(Date.now()/50)*10, 0, Math.PI*2); ctx.fill();
             }
 
             drawChibiCharacter(ctx, state.character, this.animFrame, this.isJumping);
@@ -564,25 +460,22 @@
     }
 
     class Obstacle {
-        constructor(worldX, type) {
+        constructor(worldX, worldY, type) {
             this.x = worldX;
+            this.y = worldY; 
             this.type = type; 
             this.w = this.type === 'defender' ? 50 : 40;
             this.h = this.type === 'defender' ? 80 : 40;
-            
-            this.y = canvas.height - config.groundHeight;
-            
-            if (this.type === 'mathball' && Math.random() > 0.5) {
-                this.y -= 80; 
-            }
             this.passed = false;
             this.offsetAnim = Math.random() * Math.PI * 2; 
+
+            if (this.type === 'mathball') {
+                this.y -= 20; 
+            }
         }
 
         update() {
-            if (this.type === 'defender') {
-                this.x -= (config.baseSpeed * 0.2); 
-            }
+            if (this.type === 'defender') this.x -= (config.baseSpeed * 0.2); 
         }
 
         draw(ctx) {
@@ -591,144 +484,64 @@
 
             ctx.save();
             ctx.translate(screenX, this.y);
-
-            if (this.type === 'defender') {
-                drawChibiDefender(ctx, state.frames + this.offsetAnim);
-            } else {
-                drawCartoonMathBall(ctx);
-            }
+            if (this.type === 'defender') drawChibiDefender(ctx, state.frames + this.offsetAnim);
+            else drawCartoonMathBall(ctx);
             ctx.restore();
         }
     }
 
     class Particle {
-        constructor(x, y, color) {
-            this.x = x; this.y = y;
-            this.vx = (Math.random() - 0.5) * 15;
-            this.vy = (Math.random() - 0.5) * 15;
-            this.life = 1.0;
-            this.color = color;
-            this.size = Math.random() * 8 + 4;
-        }
-        update() {
-            this.x += this.vx; this.y += this.vy;
-            this.life -= 0.04;
-        }
-        draw(ctx) {
-            let screenX = this.x - state.cameraX;
-            ctx.fillStyle = this.color;
-            ctx.globalAlpha = this.life;
-            ctx.beginPath();
-            ctx.arc(screenX, this.y, this.size, 0, Math.PI*2);
-            ctx.fill();
-            ctx.globalAlpha = 1.0;
-        }
+        constructor(x, y, color) { this.x = x; this.y = y; this.vx = (Math.random() - 0.5) * 15; this.vy = (Math.random() - 0.5) * 15; this.life = 1.0; this.color = color; this.size = Math.random() * 8 + 4; }
+        update() { this.x += this.vx; this.y += this.vy; this.life -= 0.04; }
+        draw(ctx) { let screenX = this.x - state.cameraX; ctx.fillStyle = this.color; ctx.globalAlpha = this.life; ctx.beginPath(); ctx.arc(screenX, this.y, this.size, 0, Math.PI*2); ctx.fill(); ctx.globalAlpha = 1.0; }
     }
 
-    function createParticles(x, y, color, amount) {
-        for(let i=0; i<amount; i++) entities.particles.push(new Particle(x, y - 40, color));
-    }
+    function createParticles(x, y, color, amount) { for(let i=0; i<amount; i++) entities.particles.push(new Particle(x, y - 40, color)); }
 
-    /* --- CHIBI RENDERING --- */
+    /* --- RENDERING --- */
     function drawChibiCharacter(ctx, charName, frame, isJumping) {
-        const skin = '#fcd34d'; const shirt = '#1e3a8a'; const darkShirt = '#172554';
-        const pants = '#ffffff'; const shoes = '#000000';
-
-        let bodyY = -12; 
-        let headY = isJumping ? -55 : -52 + Math.abs(Math.sin(frame*2))*2; 
-        let headR = 26; 
-
-        let legSwing = isJumping ? 0 : Math.sin(frame) * 8;
-        let armSwing = isJumping ? -15 : Math.sin(frame + Math.PI) * 12;
+        const skin = '#fcd34d', shirt = '#1e3a8a', darkShirt = '#172554', pants = '#ffffff', shoes = '#000000';
+        let bodyY = -12, headY = isJumping ? -55 : -52 + Math.abs(Math.sin(frame*2))*2, headR = 26; 
+        let legSwing = isJumping ? 0 : Math.sin(frame) * 8, armSwing = isJumping ? -15 : Math.sin(frame + Math.PI) * 12;
 
         ctx.fillStyle = 'rgba(0,0,0,0.15)'; ctx.beginPath(); ctx.ellipse(0, 0, 20, 5, 0, 0, Math.PI*2); ctx.fill();
-
         ctx.fillStyle = skin; ctx.beginPath(); ctx.roundRect(-4 + armSwing, bodyY - 12, 8, 14, 4); ctx.fill();
-        ctx.fillStyle = skin; ctx.beginPath();
-        if (isJumping) ctx.roundRect(2, -8, 8, 10, 4); else ctx.roundRect(-4 - legSwing, -10, 8, 12, 4); ctx.fill();
-
+        ctx.fillStyle = skin; ctx.beginPath(); if (isJumping) ctx.roundRect(2, -8, 8, 10, 4); else ctx.roundRect(-4 - legSwing, -10, 8, 12, 4); ctx.fill();
         ctx.fillStyle = shirt; ctx.beginPath(); ctx.roundRect(-12, bodyY - 15, 24, 18, 6); ctx.fill();
         ctx.fillStyle = darkShirt; ctx.fillRect(-4, bodyY - 15, 8, 18); 
         ctx.fillStyle = pants; ctx.beginPath(); ctx.roundRect(-13, bodyY + 1, 26, 6, 2); ctx.fill();
+        ctx.fillStyle = skin; ctx.beginPath(); if (isJumping) ctx.roundRect(-10, -10, 8, 12, 4); else ctx.roundRect(-4 + legSwing, -10, 8, 14, 4); ctx.fill();
+        ctx.fillStyle = shoes; if (isJumping) ctx.roundRect(-12, 0, 10, 6, 3); else ctx.roundRect(-6 + legSwing, 2, 12, 6, 3); ctx.fill();
 
-        ctx.fillStyle = skin; ctx.beginPath();
-        if (isJumping) ctx.roundRect(-10, -10, 8, 12, 4); else ctx.roundRect(-4 + legSwing, -10, 8, 14, 4); ctx.fill();
-
-        ctx.fillStyle = shoes;
-        if (isJumping) ctx.roundRect(-12, 0, 10, 6, 3); else ctx.roundRect(-6 + legSwing, 2, 12, 6, 3); ctx.fill();
-
-        if (charName === 'ana') {
-            ctx.fillStyle = '#451a03'; ctx.beginPath();
-            let tailSwing = isJumping ? -15 : Math.sin(frame)*10;
-            ctx.arc(-22, headY + 5 + tailSwing, 16, 0, Math.PI*2); ctx.fill();
-        }
+        if (charName === 'ana') { ctx.fillStyle = '#451a03'; ctx.beginPath(); let tailSwing = isJumping ? -15 : Math.sin(frame)*10; ctx.arc(-22, headY + 5 + tailSwing, 16, 0, Math.PI*2); ctx.fill(); }
 
         ctx.fillStyle = skin; ctx.beginPath(); ctx.arc(0, headY, headR, 0, Math.PI*2); ctx.fill();
-
-        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(10, headY + 2, 8, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#000000'; ctx.beginPath(); ctx.arc(12, headY + 2, 5, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(13, headY, 2, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(10, headY + 4, 1, 0, Math.PI*2); ctx.fill();
-
-        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(-5, headY + 2, 7, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#000000'; ctx.beginPath(); ctx.arc(-3, headY + 2, 4.5, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(-2, headY, 1.8, 0, Math.PI*2); ctx.fill();
-
-        ctx.fillStyle = 'rgba(239, 68, 68, 0.3)';
-        ctx.beginPath(); ctx.ellipse(18, headY + 12, 4, 2, 0, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.ellipse(-10, headY + 12, 4, 2, 0, 0, Math.PI*2); ctx.fill();
-
+        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(10, headY + 2, 8, 0, Math.PI*2); ctx.fill(); ctx.fillStyle = '#000000'; ctx.beginPath(); ctx.arc(12, headY + 2, 5, 0, Math.PI*2); ctx.fill(); ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(13, headY, 2, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(10, headY + 4, 1, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(-5, headY + 2, 7, 0, Math.PI*2); ctx.fill(); ctx.fillStyle = '#000000'; ctx.beginPath(); ctx.arc(-3, headY + 2, 4.5, 0, Math.PI*2); ctx.fill(); ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(-2, headY, 1.8, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.3)'; ctx.beginPath(); ctx.ellipse(18, headY + 12, 4, 2, 0, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.ellipse(-10, headY + 12, 4, 2, 0, 0, Math.PI*2); ctx.fill();
         ctx.strokeStyle = '#9a3412'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(6, headY + 12, 4, 0, Math.PI); ctx.stroke();
 
-        if (charName === 'ana') {
-            ctx.fillStyle = '#451a03'; ctx.beginPath(); ctx.arc(0, headY - 4, headR + 1, Math.PI, Math.PI*2); ctx.fill();
-            ctx.beginPath(); ctx.moveTo(-26, headY - 4); ctx.quadraticCurveTo(-10, headY - 20, 15, headY - 10); ctx.lineTo(26, headY - 4); ctx.fill();
-        } else {
-            ctx.fillStyle = '#b45309'; ctx.beginPath();
-            ctx.moveTo(-25, headY); ctx.lineTo(-18, headY - 32); ctx.lineTo(-5, headY - 22); ctx.lineTo(8, headY - 35); ctx.lineTo(18, headY - 20); ctx.lineTo(26, headY - 5); ctx.fill();
-            ctx.fillStyle = '#b45309'; ctx.beginPath(); ctx.arc(16, headY + 10, 1, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(20, headY + 9, 1, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(18, headY + 13, 1, 0, Math.PI*2); ctx.fill();
-        }
+        if (charName === 'ana') { ctx.fillStyle = '#451a03'; ctx.beginPath(); ctx.arc(0, headY - 4, headR + 1, Math.PI, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.moveTo(-26, headY - 4); ctx.quadraticCurveTo(-10, headY - 20, 15, headY - 10); ctx.lineTo(26, headY - 4); ctx.fill(); } 
+        else { ctx.fillStyle = '#b45309'; ctx.beginPath(); ctx.moveTo(-25, headY); ctx.lineTo(-18, headY - 32); ctx.lineTo(-5, headY - 22); ctx.lineTo(8, headY - 35); ctx.lineTo(18, headY - 20); ctx.lineTo(26, headY - 5); ctx.fill(); }
 
         ctx.fillStyle = skin; ctx.beginPath(); ctx.roundRect(-4 - armSwing, bodyY - 12, 8, 16, 4); ctx.fill();
         ctx.fillStyle = shirt; ctx.beginPath(); ctx.roundRect(-5 - armSwing, bodyY - 13, 10, 8, 3); ctx.fill();
     }
 
     function drawChibiDefender(ctx, frame) {
-        const shirt = '#ef4444'; const skin = '#fca5a5'; const pants = '#1e3a8a'; const shoes = '#333333';
-        let legSwing = Math.sin(frame * 0.4) * 10; let armSwing = Math.sin(frame * 0.4 + Math.PI) * 12;
-        let headBounce = Math.abs(Math.sin(frame * 0.4)) * 3;
-        let bodyY = -12; let headY = -52 + headBounce; let headR = 26;
-
         ctx.save(); ctx.scale(-1, 1);
+        let legSwing = Math.sin(frame * 0.4) * 10, armSwing = Math.sin(frame * 0.4 + Math.PI) * 12, bodyY = -12, headY = -52 + Math.abs(Math.sin(frame * 0.4)) * 3;
         ctx.fillStyle = 'rgba(0,0,0,0.15)'; ctx.beginPath(); ctx.ellipse(0, 0, 20, 5, 0, 0, Math.PI*2); ctx.fill();
-
-        ctx.fillStyle = skin; ctx.beginPath(); ctx.roundRect(-4 + armSwing, bodyY - 12, 8, 14, 4); ctx.fill();
-        ctx.fillStyle = skin; ctx.beginPath(); ctx.roundRect(-4 - legSwing, -10, 8, 12, 4); ctx.fill();
-
-        ctx.fillStyle = shirt; ctx.beginPath(); ctx.roundRect(-14, bodyY - 15, 28, 18, 6); ctx.fill();
-        ctx.fillStyle = '#ffffff'; ctx.font = 'bold 10px "Fredoka One"'; ctx.textAlign = 'center'; ctx.fillText('15', 0, bodyY - 2);
-        ctx.fillStyle = pants; ctx.beginPath(); ctx.roundRect(-15, bodyY + 1, 30, 6, 2); ctx.fill();
-
-        ctx.fillStyle = skin; ctx.beginPath(); ctx.roundRect(-4 + legSwing, -10, 8, 14, 4); ctx.fill();
-        ctx.fillStyle = shoes; ctx.beginPath(); ctx.roundRect(-6 + legSwing, 2, 12, 6, 3); ctx.fill();
-
-        ctx.fillStyle = skin; ctx.beginPath(); ctx.arc(0, headY, headR, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(-5, headY + 2, 6, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#000000'; ctx.beginPath(); ctx.arc(-4, headY + 2, 3, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(10, headY + 2, 8, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#000000'; ctx.beginPath(); ctx.arc(11, headY + 2, 4, 0, Math.PI*2); ctx.fill();
-
-        ctx.strokeStyle = '#7f1d1d'; ctx.lineWidth = 3; ctx.lineCap = 'round';
-        ctx.beginPath(); ctx.moveTo(18, headY - 8); ctx.lineTo(6, headY - 2); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(-10, headY - 6); ctx.lineTo(-2, headY - 2); ctx.stroke();
-
-        ctx.fillStyle = '#450a0a'; ctx.beginPath(); ctx.ellipse(8, headY + 12, 6, 4, 0, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.rect(4, headY + 9, 8, 3); ctx.fill();
-
-        ctx.fillStyle = '#991b1b'; ctx.beginPath(); ctx.arc(0, headY - 2, headR + 1.5, Math.PI, Math.PI*2); ctx.fill();
-
-        ctx.fillStyle = skin; ctx.beginPath(); ctx.roundRect(-4 - armSwing, bodyY - 12, 8, 16, 4); ctx.fill();
-        ctx.fillStyle = shirt; ctx.beginPath(); ctx.roundRect(-5 - armSwing, bodyY - 13, 10, 8, 3); ctx.fill();
+        ctx.fillStyle = '#fca5a5'; ctx.beginPath(); ctx.roundRect(-4 + armSwing, bodyY - 12, 8, 14, 4); ctx.fill(); ctx.beginPath(); ctx.roundRect(-4 - legSwing, -10, 8, 12, 4); ctx.fill();
+        ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.roundRect(-14, bodyY - 15, 28, 18, 6); ctx.fill(); ctx.fillStyle = '#ffffff'; ctx.font = 'bold 10px "Fredoka One"'; ctx.textAlign = 'center'; ctx.fillText('15', 0, bodyY - 2);
+        ctx.fillStyle = '#1e3a8a'; ctx.beginPath(); ctx.roundRect(-15, bodyY + 1, 30, 6, 2); ctx.fill();
+        ctx.fillStyle = '#fca5a5'; ctx.beginPath(); ctx.roundRect(-4 + legSwing, -10, 8, 14, 4); ctx.fill(); ctx.fillStyle = '#333333'; ctx.beginPath(); ctx.roundRect(-6 + legSwing, 2, 12, 6, 3); ctx.fill();
+        ctx.fillStyle = '#fca5a5'; ctx.beginPath(); ctx.arc(0, headY, 26, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(-5, headY + 2, 6, 0, Math.PI*2); ctx.fill(); ctx.fillStyle = '#000000'; ctx.beginPath(); ctx.arc(-4, headY + 2, 3, 0, Math.PI*2); ctx.fill(); ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(10, headY + 2, 8, 0, Math.PI*2); ctx.fill(); ctx.fillStyle = '#000000'; ctx.beginPath(); ctx.arc(11, headY + 2, 4, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#7f1d1d'; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(18, headY - 8); ctx.lineTo(6, headY - 2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(-10, headY - 6); ctx.lineTo(-2, headY - 2); ctx.stroke();
+        ctx.fillStyle = '#450a0a'; ctx.beginPath(); ctx.ellipse(8, headY + 12, 6, 4, 0, 0, Math.PI*2); ctx.fill(); ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.rect(4, headY + 9, 8, 3); ctx.fill();
+        ctx.fillStyle = '#991b1b'; ctx.beginPath(); ctx.arc(0, headY - 2, 27.5, Math.PI, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#fca5a5'; ctx.beginPath(); ctx.roundRect(-4 - armSwing, bodyY - 12, 8, 16, 4); ctx.fill(); ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.roundRect(-5 - armSwing, bodyY - 13, 10, 8, 3); ctx.fill();
         ctx.restore();
     }
 
@@ -736,38 +549,65 @@
         let hover = Math.sin(Date.now()/200) * 8;
         ctx.fillStyle = 'rgba(0,0,0,0.2)'; ctx.beginPath(); ctx.ellipse(0, 0, 18 - hover*0.5, 4, 0, 0, Math.PI*2); ctx.fill();
         ctx.translate(0, -20 + hover);
-        ctx.fillStyle = 'rgba(251, 191, 36, 0.3)'; ctx.beginPath(); ctx.arc(0, 0, 25, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#111827'; ctx.beginPath();
-        for(let i=0; i<5; i++) {
-            let a = (i * Math.PI * 2) / 5 - Math.PI/2;
-            let x = Math.cos(a)*7; let y = Math.sin(a)*7;
-            if(i==0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-        }
-        ctx.closePath(); ctx.fill();
-        ctx.strokeStyle = '#111827'; ctx.lineWidth = 2;
-        for(let i=0; i<5; i++) {
-            let a = (i * Math.PI * 2) / 5 - Math.PI/2;
-            ctx.beginPath(); ctx.moveTo(Math.cos(a)*7, Math.sin(a)*7); ctx.lineTo(Math.cos(a)*18, Math.sin(a)*18); ctx.stroke();
-        }
+        ctx.fillStyle = 'rgba(251, 191, 36, 0.3)'; ctx.beginPath(); ctx.arc(0, 0, 25, 0, Math.PI*2); ctx.fill(); ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#111827'; ctx.beginPath(); for(let i=0; i<5; i++) { let a = (i*Math.PI*2)/5 - Math.PI/2; let x = Math.cos(a)*7, y = Math.sin(a)*7; if(i==0) ctx.moveTo(x,y); else ctx.lineTo(x,y); } ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = '#111827'; ctx.lineWidth = 2; for(let i=0; i<5; i++) { let a = (i*Math.PI*2)/5 - Math.PI/2; ctx.beginPath(); ctx.moveTo(Math.cos(a)*7, Math.sin(a)*7); ctx.lineTo(Math.cos(a)*18, Math.sin(a)*18); ctx.stroke(); }
         ctx.strokeStyle = '#374151'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI*2); ctx.stroke();
-        ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 30px "Fredoka One"'; ctx.textAlign = 'center';
-        ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 10; ctx.fillText('?', 0, -24); ctx.shadowBlur = 0; 
+        ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 30px "Fredoka One"'; ctx.textAlign = 'center'; ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 10; ctx.fillText('?', 0, -24); ctx.shadowBlur = 0; 
     }
 
-    /* --- GAME LOOP & LOGIC --- */
+    function drawBackground() {
+        ctx.fillStyle = '#87CEEB'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        let cloudOffset = (state.cameraX * 0.2) % 1500;
+        ctx.beginPath(); ctx.arc(200 - cloudOffset, 120, 40, 0, Math.PI*2); ctx.arc(250 - cloudOffset, 120, 50, 0, Math.PI*2); ctx.arc(300 - cloudOffset, 120, 40, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(900 - cloudOffset, 180, 50, 0, Math.PI*2); ctx.arc(970 - cloudOffset, 180, 70, 0, Math.PI*2); ctx.arc(1040 - cloudOffset, 180, 50, 0, Math.PI*2); ctx.fill();
+        
+        ctx.fillStyle = 'rgba(0,0,0,0.08)';
+        let cityOffset = (state.cameraX * 0.4) % 1000;
+        for(let i=0; i<4; i++) {
+            let baseX = i*1000 - cityOffset;
+            ctx.fillRect(baseX + 100, canvas.height - config.groundHeight - 120, 200, 120);
+            ctx.beginPath(); ctx.arc(baseX + 500, canvas.height - config.groundHeight, 150, Math.PI, Math.PI*2); ctx.fill();
+            ctx.fillRect(baseX + 700, canvas.height - config.groundHeight - 180, 150, 180);
+        }
+    }
+
+    function drawPlatforms(ctx) {
+        for (let p of entities.platforms) {
+            let screenX = p.x - state.cameraX;
+            if (screenX > canvas.width || screenX + p.w < -100) continue;
+            
+            if (p.jumpThrough) {
+                // Plataforma Flotante (Ladrillo/Amarillo)
+                ctx.fillStyle = '#f59e0b'; ctx.fillRect(screenX, p.y, p.w, p.h);
+                ctx.fillStyle = '#b45309'; ctx.fillRect(screenX, p.y + p.h - 5, p.w, 5); // sombra
+                ctx.fillStyle = '#fcd34d'; ctx.fillRect(screenX, p.y, p.w, 3); // brillo
+                ctx.strokeStyle = '#92400e'; ctx.lineWidth = 2; ctx.strokeRect(screenX, p.y, p.w, p.h);
+                ctx.fillStyle = '#78350f'; ctx.beginPath(); ctx.arc(screenX + 10, p.y + 12, 3, 0, Math.PI*2); ctx.arc(screenX + p.w - 10, p.y + 12, 3, 0, Math.PI*2); ctx.fill();
+            } else {
+                // Suelo firme
+                ctx.fillStyle = '#65a30d'; ctx.fillRect(screenX, p.y, p.w, 20); 
+                ctx.fillStyle = '#84cc16'; ctx.fillRect(screenX, p.y, p.w, 6); 
+                ctx.fillStyle = '#8B4513'; ctx.fillRect(screenX, p.y + 20, p.w, p.h - 20); 
+                
+                ctx.fillStyle = 'rgba(0,0,0,0.1)';
+                for (let i = 0; i < p.w; i += 40) { ctx.fillRect(screenX + i, p.y + 20, 10, p.h - 20); }
+            }
+        }
+    }
+
+    /* --- GAME LOOP Y LÓGICA --- */
     function resizeCanvas() {
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        if(entities.player) entities.player.resetPos();
+        if(entities.player && entities.platforms.length === 0) entities.player.resetPos();
     }
     window.addEventListener('resize', resizeCanvas);
 
     function checkCollisions() {
         let p = entities.player;
-        
         for (let i = entities.obstacles.length - 1; i >= 0; i--) {
             let obs = entities.obstacles[i];
-            
             let dx = Math.abs(p.x - obs.x);
             let dy = Math.abs((p.y - p.h/2) - (obs.y - obs.h/2));
             
@@ -778,16 +618,11 @@
                         entities.obstacles.splice(i, 1);
                         state.score += 50;
                     } else if (p.invincible <= 0) {
-                        state.energy -= 20;
-                        state.consecutiveCorrect = 0;
-                        updateHUD();
-                        p.invincible = 60; 
-                        p.vx = -10; p.vy = -5; p.x -= 20;
+                        state.energy -= 20; state.consecutiveCorrect = 0; updateHUD();
+                        p.invincible = 60; p.vx = -10; p.vy = -5; p.x -= 20;
                         createParticles(p.x, p.y - 40, '#ef4444', 20);
-                        
-                        document.getElementById('game-container').classList.add('animate-ping');
-                        setTimeout(()=>document.getElementById('game-container').classList.remove('animate-ping'), 200);
-
+                        document.getElementById('game-container').classList.add('damage-flash');
+                        setTimeout(()=>document.getElementById('game-container').classList.remove('damage-flash'), 300);
                         if (state.energy <= 0) gameOver(false);
                     }
                 } else if (obs.type === 'mathball') {
@@ -796,39 +631,8 @@
                     showQuestion();
                 }
             }
-
-            if (obs.type === 'defender' && !obs.passed && obs.x < p.x - 30) {
-                obs.passed = true;
-                state.score += 10;
-            }
+            if (obs.type === 'defender' && !obs.passed && obs.x < p.x - 30) { obs.passed = true; state.score += 10; }
         }
-    }
-
-    function drawBackground() {
-        ctx.fillStyle = '#87CEEB'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = 'rgba(255,255,255,0.8)';
-        let cloudOffset = (state.cameraX * 0.2) % 1500;
-        ctx.beginPath(); ctx.arc(200 - cloudOffset, 120, 40, 0, Math.PI*2); ctx.arc(250 - cloudOffset, 120, 50, 0, Math.PI*2); ctx.arc(300 - cloudOffset, 120, 40, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(900 - cloudOffset, 180, 50, 0, Math.PI*2); ctx.arc(970 - cloudOffset, 180, 70, 0, Math.PI*2); ctx.arc(1040 - cloudOffset, 180, 50, 0, Math.PI*2); ctx.fill();
-
-        ctx.fillStyle = 'rgba(0,0,0,0.08)';
-        let cityOffset = (state.cameraX * 0.4) % 1000;
-        for(let i=0; i<4; i++) {
-            let baseX = i*1000 - cityOffset;
-            ctx.fillRect(baseX + 100, canvas.height - config.groundHeight - 120, 200, 120);
-            ctx.beginPath(); ctx.arc(baseX + 500, canvas.height - config.groundHeight, 150, Math.PI, Math.PI*2); ctx.fill();
-            ctx.fillRect(baseX + 700, canvas.height - config.groundHeight - 180, 150, 180);
-        }
-
-        let stripeWidth = 150; let groundY = canvas.height - config.groundHeight;
-        let offset = state.cameraX % (stripeWidth * 2);
-        
-        ctx.fillStyle = '#a3e635'; ctx.fillRect(0, groundY, canvas.width, config.groundHeight);
-        ctx.fillStyle = '#84cc16';
-        for(let i = -1; i < canvas.width / stripeWidth + 2; i++) {
-            if (i % 2 === 0) ctx.fillRect(i * stripeWidth - offset, groundY, stripeWidth, config.groundHeight);
-        }
-        ctx.fillStyle = '#ffffff'; ctx.fillRect(0, groundY, canvas.width, 6);
     }
 
     function gameLoop() {
@@ -837,29 +641,19 @@
         if (!state.paused) {
             state.frames++;
             
-            let viewEnd = state.cameraX + canvas.width;
-            if (viewEnd > state.nextSpawnDist) {
-                let isDefender = Math.random() < 0.6;
-                if (entities.obstacles.filter(o => o.type === 'mathball').length < 1) isDefender = false;
-                entities.obstacles.push(new Obstacle(state.nextSpawnDist + 200, isDefender ? 'defender' : 'mathball'));
-                state.nextSpawnDist += (isDefender ? 450 : 800);
-            }
+            generateWorldChunks(); 
 
             entities.player.update();
             entities.obstacles.forEach(o => o.update());
             entities.particles.forEach(p => p.update());
-
-            entities.obstacles = entities.obstacles.filter(o => o.x > state.cameraX - 300);
             entities.particles = entities.particles.filter(p => p.life > 0);
 
             if (state.superSpeedTimer > 0) {
-                state.superSpeedTimer--;
-                state.speedMultiplier = 2.5;
+                state.superSpeedTimer--; state.speedMultiplier = 2.5;
                 if(state.superSpeedTimer === 0) {
                     state.speedMultiplier = 1 + (state.stage * 0.1); 
                     document.getElementById('game-container').classList.remove('super-speed-fx');
-                    state.consecutiveCorrect = 0; 
-                    updateHUD();
+                    state.consecutiveCorrect = 0; updateHUD();
                 }
             }
 
@@ -867,210 +661,161 @@
             
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawBackground();
-            
-            entities.obstacles.sort((a,b) => a.y - b.y); 
-            entities.obstacles.forEach(o => o.draw(ctx));
+            drawPlatforms(ctx);
+            entities.obstacles.sort((a,b) => a.y - b.y).forEach(o => o.draw(ctx));
             entities.player.draw(ctx);
             entities.particles.forEach(p => p.draw(ctx));
         }
-
         requestAnimationFrame(gameLoop);
     }
 
-    /* --- INTERACTIONS & UI --- */
+    /* --- INTERACCIÓN Y FLUJO --- */
     function startGame() {
-        let nameInput = document.getElementById('player-name').value;
-        if(nameInput) state.playerName = nameInput;
-        
+        let n = document.getElementById('player-name').value; if(n) state.playerName = n;
         document.getElementById('menu-screen').classList.add('hidden');
         document.getElementById('hud').classList.remove('hidden');
         document.getElementById('controls').classList.remove('hidden');
         
         resizeCanvas();
         entities.player = new Player();
+        state.running = true; state.paused = false; state.score = 0; state.energy = 100;
         
-        state.running = true;
-        state.paused = false;
-        state.score = 0;
-        state.energy = 100;
-        state.totalCorrectAnswers = 0;
-        state.totalQuestionsAsked = 0;
+        // Limpiar memoria de preguntas al reiniciar una partida completa
+        state.askedQuestions.clear();
+        state.failedPool = [];
         
         showPreStage(1); 
         gameLoop();
     }
 
     function showPreStage(stageNum) {
-        state.paused = true;
-        state.stage = stageNum;
-        keys = { left: false, right: false, up: false }; 
-
+        state.paused = true; state.stage = stageNum; keys = { left: false, right: false, up: false }; 
         document.getElementById('pre-stage-title').innerText = `Preparat per la Fase ${stageNum}?`;
         document.getElementById('pre-stage-btn-num').innerText = stageNum;
 
-        let gallery = document.getElementById('shields-gallery');
-        gallery.innerHTML = '';
-
+        let gallery = document.getElementById('shields-gallery'); gallery.innerHTML = '';
         for (let i = 1; i <= 5; i++) {
-            let shield = Shields[i];
-            let isUnlocked = i < stageNum;
-            let isCurrent = i === stageNum;
-            
+            let shield = Shields[i], isUn = i < stageNum, isCurr = i === stageNum;
             let div = document.createElement('div');
-            let baseClasses = "flex flex-col items-center justify-center p-2 md:p-4 rounded-3xl border-4 transition-all w-24 h-32 md:w-32 md:h-40 bg-white";
-            
-            if (isCurrent) {
-                div.className = `${baseClasses} border-yellow-400 scale-110 pulse-shield z-10`;
-            } else if (isUnlocked) {
-                div.className = `${baseClasses} border-green-500 shadow-inner opacity-90`;
-            } else {
-                div.className = `${baseClasses} border-gray-300 opacity-60 bg-gray-100`;
-            }
-
-            // Aplicar imagen del escudo online (Gris si está bloqueado)
-            let imgClass = `w-full h-full object-contain ${!isUnlocked && !isCurrent ? 'grayscale opacity-40' : ''}`;
-            
-            div.innerHTML = `
-                <div class="w-14 h-14 md:w-20 md:h-20 mb-2 flex items-center justify-center">
-                    <img src="${shield.img}" class="${imgClass}" alt="${shield.name}" />
-                </div>
-                <div class="text-[10px] md:text-sm font-bold text-center leading-tight ${isUnlocked || isCurrent ? 'text-gray-800' : 'text-gray-400'}">
-                    ${isUnlocked || isCurrent ? shield.name : 'Bloquejat'}
-                </div>
-            `;
+            let baseC = "flex flex-col items-center justify-center p-2 md:p-4 rounded-3xl border-4 transition-all w-24 h-32 md:w-32 md:h-40 bg-white";
+            div.className = isCurr ? `${baseC} border-yellow-400 scale-110 pulse-shield z-10` : (isUn ? `${baseC} border-green-500 shadow-inner opacity-90` : `${baseC} border-gray-300 opacity-60 bg-gray-100`);
+            div.innerHTML = `<div class="w-14 h-14 md:w-20 md:h-20 mb-2 flex items-center justify-center"><img src="${shield.img}" class="w-full h-full object-contain ${!isUn && !isCurr ? 'grayscale opacity-40' : ''}" /></div><div class="text-[10px] md:text-sm font-bold text-center leading-tight ${isUn || isCurr ? 'text-gray-800' : 'text-gray-400'}">${isUn || isCurr ? shield.name : 'Bloquejat'}</div>`;
             gallery.appendChild(div);
         }
-
         document.getElementById('pre-stage-screen').classList.remove('hidden');
     }
 
     function startStageFromPre() {
         document.getElementById('pre-stage-screen').classList.add('hidden');
-        startStage(state.stage);
-    }
-
-    function startStage(stageNum) {
-        state.questionsAnswered = 0;
-        state.correctAnswersStage = 0;
-        state.speedMultiplier = 1 + (stageNum * 0.1); 
         
-        state.cameraX = 0;
-        state.nextSpawnDist = 800;
-        entities.player.x = 200;
-        entities.obstacles = [];
-        entities.particles = [];
+        state.questionsAnswered = 0; state.correctAnswersStage = 0; state.speedMultiplier = 1 + (state.stage * 0.1); 
+        state.cameraX = 0; state.lastPlatformEnd = 0;
+        entities.platforms = []; entities.obstacles = []; entities.particles = [];
+        entities.player.resetPos();
         
-        updateHUD();
-        state.paused = false; 
+        updateHUD(); state.paused = false; 
     }
 
     function showQuestion() {
-        state.paused = true;
-        keys = { left: false, right: false, up: false }; 
-
-        let q = MathEngine.generate(state.stage);
-        state.expectedAnswer = q.answer;
+        state.paused = true; keys = { left: false, right: false, up: false }; 
+        
+        let q;
+        // 1. Ver si hay preguntas falladas en esta fase para repetirlas
+        let failedIdx = state.failedPool.findIndex(x => x.stage === state.stage);
+        
+        if (failedIdx !== -1) {
+            // Sacar la pregunta fallada de la cola y repetirla
+            q = state.failedPool.splice(failedIdx, 1)[0].q;
+        } else {
+            // 2. Si no hay falladas, generar una TOTALMENTE NUEVA
+            let attempts = 0;
+            do {
+                q = MathEngine.generate(state.stage);
+                attempts++;
+            // Asegurar que la pregunta nunca se ha hecho antes (Max 100 intentos por seguridad de rendimiento)
+            } while (state.askedQuestions.has(q.text) && attempts < 100);
+            
+            // Añadir a la memoria global
+            state.askedQuestions.add(q.text);
+        }
+        
+        // Guardamos el objeto entero por si se falla y hay que volver a guardarlo
+        state.currentQuestionObj = q; 
+        state.expectedAnswer = q.answer; 
         state.currentAnswer = "";
         
-        document.getElementById('q-stage').innerText = state.stage;
+        document.getElementById('q-stage').innerText = state.stage; 
         document.getElementById('q-progress').innerText = state.questionsAnswered + 1;
         document.getElementById('question-text').innerText = q.text;
         
-        let visDiv = document.getElementById('question-visual');
-        if (q.visual) { visDiv.innerHTML = q.visual(); visDiv.classList.remove('hidden'); } 
-        else { visDiv.innerHTML = ''; visDiv.classList.add('hidden'); }
-
-        document.getElementById('answer-display').innerText = "_";
+        let vis = document.getElementById('question-visual');
+        if (q.visual) { vis.innerHTML = q.visual(); vis.classList.remove('hidden'); } else { vis.innerHTML = ''; vis.classList.add('hidden'); }
+        
+        document.getElementById('answer-display').innerText = "_"; 
         document.getElementById('feedback-msg').innerText = "";
         document.getElementById('question-screen').classList.remove('hidden');
     }
 
     function typeNumpad(val) {
-        let disp = document.getElementById('answer-display');
         if (val === 'del') state.currentAnswer = state.currentAnswer.slice(0, -1);
         else if (state.currentAnswer.length < 8) state.currentAnswer += val;
-        disp.innerText = state.currentAnswer || "_";
+        document.getElementById('answer-display').innerText = state.currentAnswer || "_";
     }
 
     function checkAnswer() {
         state.totalQuestionsAsked++;
-        let isCorrect = state.currentAnswer === state.expectedAnswer;
+        let isC = state.currentAnswer === state.expectedAnswer;
         let fb = document.getElementById('feedback-msg');
         
-        if (isCorrect) {
+        if (isC) {
             fb.innerText = "¡CORRECTE! 🎉"; fb.className = "h-8 mt-2 cartoon-font text-2xl tracking-wide text-green-600";
-            state.correctAnswersStage++; state.totalCorrectAnswers++;
-            state.score += 100 * state.stage; state.consecutiveCorrect++;
+            state.correctAnswersStage++; state.totalCorrectAnswers++; state.score += 100 * state.stage; state.consecutiveCorrect++;
             state.energy = Math.min(100, state.energy + 5);
             if (state.consecutiveCorrect >= 5 && state.superSpeedTimer === 0) activateSuperSpeed();
         } else {
             fb.innerText = `Incorrecte. Era: ${state.expectedAnswer}`; fb.className = "h-8 mt-2 cartoon-font text-2xl tracking-wide text-red-600";
             state.energy -= 15; state.consecutiveCorrect = 0;
+            
+            // SISTEMA MEMORIA: La pregunta fallada va a la cola de reintentos
+            state.failedPool.push({ stage: state.stage, q: state.currentQuestionObj });
         }
-
+        
         updateHUD();
-
+        
         setTimeout(() => {
             document.getElementById('question-screen').classList.add('hidden');
-            state.questionsAnswered++;
-            state.paused = false;
-
+            state.questionsAnswered++; state.paused = false;
             if (state.energy <= 0) gameOver(false);
             else if (state.questionsAnswered >= config.maxQuestionsPerStage) endStage();
         }, 1500);
     }
 
     function activateSuperSpeed() {
-        state.superSpeedTimer = 400; 
-        document.getElementById('game-container').classList.add('super-speed-fx');
+        state.superSpeedTimer = 400; document.getElementById('game-container').classList.add('super-speed-fx');
         createParticles(entities.player.x, entities.player.y, '#fbbf24', 50);
     }
 
     function endStage() {
-        state.paused = true;
-        keys = { left: false, right: false, up: false }; 
-
-        let stageAcc = Math.round((state.correctAnswersStage / config.maxQuestionsPerStage) * 100);
-        
+        state.paused = true; keys = { left: false, right: false, up: false }; 
         document.getElementById('stage-end-num').innerText = state.stage;
         document.getElementById('stage-correct-txt').innerText = `${state.correctAnswersStage} de ${config.maxQuestionsPerStage}`;
-        document.getElementById('stage-acc-txt').innerText = `${stageAcc}%`;
+        document.getElementById('stage-acc-txt').innerText = `${Math.round((state.correctAnswersStage / config.maxQuestionsPerStage) * 100)}%`;
         document.getElementById('stage-score-txt').innerText = state.score;
-
-        let shield = Shields[state.stage];
-        // Imprimir imagen PNG en vez de SVG
-        document.getElementById('shield-container').innerHTML = `<img src="${shield.img}" alt="${shield.name}" class="w-32 h-32 md:w-40 md:h-40 mx-auto object-contain pulse-shield" />`;
-        document.getElementById('shield-name').innerText = shield.name;
-        document.getElementById('shield-name').style.color = shield.color;
-
+        let s = Shields[state.stage];
+        document.getElementById('shield-container').innerHTML = `<img src="${s.img}" class="w-32 h-32 md:w-40 md:h-40 mx-auto object-contain pulse-shield" />`;
+        document.getElementById('shield-name').innerText = s.name; document.getElementById('shield-name').style.color = s.color;
         document.getElementById('stage-screen').classList.remove('hidden');
     }
 
-    function nextStage() {
-        document.getElementById('stage-screen').classList.add('hidden');
-        if (state.stage < 5) {
-            showPreStage(state.stage + 1);
-        } else {
-            gameOver(true); 
-        }
-    }
+    function nextStage() { document.getElementById('stage-screen').classList.add('hidden'); if (state.stage < 5) showPreStage(state.stage + 1); else gameOver(true); }
 
     function gameOver(victory) {
-        state.running = false;
-        document.getElementById('hud').classList.add('hidden');
-        document.getElementById('controls').classList.add('hidden');
-        
-        let goScreen = document.getElementById('gameover-screen');
-        goScreen.classList.remove('hidden');
-        
+        state.running = false; document.getElementById('hud').classList.add('hidden'); document.getElementById('controls').classList.add('hidden');
+        document.getElementById('gameover-screen').classList.remove('hidden');
         document.getElementById('end-title').innerText = victory ? "CAMPIONS!" : "FI DEL JOC";
         document.getElementById('end-title').className = `cartoon-font text-5xl md:text-6xl mb-4 ${victory ? 'text-green-600' : 'text-red-600'}`;
-        
         let acc = state.totalQuestionsAsked > 0 ? Math.round((state.totalCorrectAnswers / state.totalQuestionsAsked) * 100) : 0;
-        document.getElementById('end-msg').innerText = victory 
-            ? `Enhorabona ${state.playerName}! Has completat les 5 fases aconseguint tots els escuts i un ${acc}% d'encerts globals. Ets un autèntic crack!` 
-            : `T'has quedat sense energia. Segueix practicant! Encerts totals: ${acc}%`;
-        
+        document.getElementById('end-msg').innerText = victory ? `Enhorabona ${state.playerName}! Has completat les 5 fases aconseguint tots els escuts i un ${acc}% d'encerts.` : `T'has quedat sense energia. Segueix practicant! Encerts: ${acc}%`;
         document.getElementById('final-score').innerText = state.score;
     }
 
@@ -1079,17 +824,10 @@
         document.getElementById('energy-fill').style.width = `${Math.max(0, state.energy)}%`;
         document.getElementById('energy-text').innerText = Math.max(0, state.energy);
         document.getElementById('energy-fill').style.backgroundColor = state.energy > 50 ? '#22c55e' : (state.energy > 20 ? '#f59e0b' : '#ef4444');
-        
-        document.getElementById('stage-hud').innerText = state.stage;
-        document.getElementById('score-hud').innerText = state.score;
+        document.getElementById('stage-hud').innerText = state.stage; document.getElementById('score-hud').innerText = state.score;
         document.getElementById('questions-hud').innerText = state.questionsAnswered;
-        
-        let acc = state.questionsAnswered > 0 ? Math.round((state.correctAnswersStage / state.questionsAnswered) * 100) : 0;
-        document.getElementById('correct-hud').innerText = acc;
-
-        let bonusUI = document.getElementById('bonus-indicator');
-        if (state.superSpeedTimer > 0) bonusUI.innerText = "⚡ SUPER VELOCITAT! ⚡";
-        else bonusUI.innerText = state.consecutiveCorrect > 0 ? `Ratxa: ${state.consecutiveCorrect}🔥` : "";
+        document.getElementById('correct-hud').innerText = state.questionsAnswered > 0 ? Math.round((state.correctAnswersStage / state.questionsAnswered) * 100) : 0;
+        document.getElementById('bonus-indicator').innerText = state.superSpeedTimer > 0 ? "⚡ SUPER VELOCITAT! ⚡" : (state.consecutiveCorrect > 0 ? `Ratxa: ${state.consecutiveCorrect}🔥` : "");
     }
 
     // Input
@@ -1097,12 +835,8 @@
         if (!state.running || state.paused) return;
         if (e.code === 'ArrowRight' || e.code === 'KeyD') { keys.right = true; document.getElementById('btn-right').classList.add('active'); }
         if (e.code === 'ArrowLeft' || e.code === 'KeyA') { keys.left = true; document.getElementById('btn-left').classList.add('active'); }
-        if (e.code === 'ArrowUp' || e.code === 'Space' || e.code === 'KeyW') { 
-            keys.up = true; document.getElementById('btn-jump').classList.add('active');
-            if(entities.player) entities.player.jump(); 
-        }
+        if (e.code === 'ArrowUp' || e.code === 'Space' || e.code === 'KeyW') { keys.up = true; document.getElementById('btn-jump').classList.add('active'); if(entities.player) entities.player.jump(); }
     });
-
     window.addEventListener('keyup', (e) => {
         if (e.code === 'ArrowRight' || e.code === 'KeyD') { keys.right = false; document.getElementById('btn-right').classList.remove('active'); }
         if (e.code === 'ArrowLeft' || e.code === 'KeyA') { keys.left = false; document.getElementById('btn-left').classList.remove('active'); }
@@ -1127,7 +861,6 @@
         document.getElementById('char-ana').classList.remove('border-blue-500', 'bg-blue-50'); document.getElementById('char-oscar').classList.remove('border-blue-500', 'bg-blue-50');
         document.getElementById(`char-${char}`).classList.add('border-blue-500', 'bg-blue-50');
     }
-
     drawPreview('preview-ana', 'ana'); drawPreview('preview-oscar', 'oscar'); selectCharacter('ana');
     document.getElementById('start-btn').addEventListener('click', startGame);
     resizeCanvas();
